@@ -1,0 +1,11 @@
+game:
+  xp:
+    quest-complete: 50
+    study-session: 25
+  level:
+    base-xp: 100
+    multiplier: 1.25
+  health:
+    max: 100
+  streak:
+    reset-days: 1

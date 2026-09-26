@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: realmcheck-db
+    environment:
+      POSTGRES_USER: realmcheck
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: realmcheck
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+volumes:
+  pgdata:
