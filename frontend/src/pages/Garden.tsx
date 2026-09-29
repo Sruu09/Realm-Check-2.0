@@ -1,18 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Plus } from 'lucide-react';
+import { getWorkouts, createWorkout } from '../services/WorkoutService';
 
 const Garden: React.FC = () => {
   const navigate = useNavigate();
-  const [workouts, setWorkouts] = useState([
-    { id: 1, name: 'Morning Jog', duration: '30 min', completed: true },
-    { id: 2, name: 'Yoga', duration: '20 min', completed: false },
-    { id: 3, name: 'Pushups', duration: '10 min', completed: false },
-  ]);
+  const [workouts, setWorkouts] = useState([] as any[]);
+  const [name, setName] = useState('');
+  const [duration, setDuration] = useState('');
+  const [date, setDate] = useState('');
 
-  const toggleWorkout = (id: number) => {
-    setWorkouts(workouts.map(w => w.id === id ? { ...w, completed: !w.completed } : w));
+  const userId = Number(localStorage.getItem('userId') || 1);
+
+  useEffect(() => {
+    getWorkouts(userId)
+      .then(data => setWorkouts(data))
+      .catch(err => console.error('Failed to load workouts', err));
+  }, []);
+
+  const handleAddWorkout = async () => {
+    if (!name || !duration || !date) {
+      alert('Please fill all fields');
+      return;
+    }
+    const newWorkout = {
+      userId,
+      name,
+      duration: Number(duration),
+      date,
+    };
+    try {
+      const saved = await createWorkout(newWorkout);
+      setWorkouts(prev => [...prev, saved]);
+      setName('');
+      setDuration('');
+      setDate('');
+    } catch (e) {
+      console.error(e);
+      alert('Failed to save workout');
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-[#618c4b] p-8 flex items-center justify-center relative overflow-hidden font-body select-none">
@@ -56,12 +84,12 @@ const Garden: React.FC = () => {
                 
                 <div className="flex gap-8 relative z-10 mt-4">
                   {workouts.map(w => (
-                    <div key={w.id} className="flex flex-col items-center group cursor-pointer" onClick={() => toggleWorkout(w.id)}>
+                    <div key={w.id} className="flex flex-col items-center group">
                       <div className="w-20 h-20 bg-[#825c38] rounded-full border-4 border-[#5e4125] flex items-center justify-center shadow-inner relative overflow-visible">
                         {/* Dirt patch */}
                         <div className="absolute w-[60%] h-[30%] bg-[#4a311c] rounded-[100%] bottom-4 opacity-50" />
                         <span className="text-5xl filter drop-shadow-md z-10 transform origin-bottom transition-transform group-hover:scale-110">
-                           {w.completed ? '🌸' : '🌱'}
+                           🌱
                         </span>
                       </div>
                       <span className="mt-3 text-xs font-bold text-[#382512] bg-[#c49b66] px-2 py-1 rounded shadow-sm">
@@ -78,7 +106,7 @@ const Garden: React.FC = () => {
                <div className="flex-grow border-l-2 border-b-2 border-[#d4c3a3] relative ml-4 mb-4">
                   {/* Mock graph line drawn with CSS */}
                   <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
-                    <polyline points="0,80 20,60 40,70 60,30 80,40 100,20" fill="none" stroke="#16a34a" strokeWidth="3" strokeLinejoin="round" />
+                    <polyline points={points} fill="none" stroke="#16a34a" strokeWidth="3" strokeLinejoin="round" />
                     <circle cx="0" cy="80" r="2" fill="#16a34a"/>
                     <circle cx="20" cy="60" r="2" fill="#16a34a"/>
                     <circle cx="40" cy="70" r="2" fill="#16a34a"/>
@@ -101,18 +129,44 @@ const Garden: React.FC = () => {
             
             <div className="p-6 flex-grow flex flex-col gap-4">
               <label className="text-xs font-bold text-[#8c7457] uppercase">Workout Name</label>
-              <input type="text" className="w-full bg-white border-2 border-[#d4c3a3] rounded p-3 font-bold text-[#4a3b2c]" placeholder="e.g. 5K Run" />
+              <input type="text" className="w-full bg-white border-2 border-[#d4c3a3] rounded p-3 font-bold text-[#4a3b2c]" placeholder="e.g. 5K Run" value={name} onChange={e => setName(e.target.value)} />
               
               <label className="text-xs font-bold text-[#8c7457] uppercase mt-2">Duration (min)</label>
-              <input type="number" className="w-full bg-white border-2 border-[#d4c3a3] rounded p-3 font-bold text-[#4a3b2c]" placeholder="30" />
+                              <input type="number" className="w-full bg-white border-2 border-[#d4c3a3] rounded p-3 font-bold text-[#4a3b2c]" placeholder="30" value={duration} onChange={e => setDuration(e.target.value)} />
               
               <label className="text-xs font-bold text-[#8c7457] uppercase mt-2">Date</label>
-              <input type="date" className="w-full bg-white border-2 border-[#d4c3a3] rounded p-3 font-bold text-[#4a3b2c]" />
+              <input type="date" className="w-full bg-white border-2 border-[#d4c3a3] rounded p-3 font-bold text-[#4a3b2c]" value={date} onChange={e => setDate(e.target.value)} />
               
-              <button className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded border-b-4 border-green-800 active:border-b-0 active:mt-1 transition-all shadow-md flex items-center justify-center gap-2">
+              <button onClick={handleAddWorkout} className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded border-b-4 border-green-800 active:border-b-0 active:mt-1 transition-all shadow-md flex items-center justify-center gap-2">
                 <Plus size={18}/> Plant Workout
               </button>
             </div>
+{/* Workout Ledger */}
+<div className="mt-6">
+  <h3 className="font-pixel text-[#4a3b2c] text-sm uppercase mb-2">Workout Ledger</h3>
+  {workouts.length === 0 ? (
+    <p className="text-xs text-[#8c7457]">No workouts recorded yet.</p>
+  ) : (
+    <table className="w-full text-xs">
+      <thead>
+        <tr className="bg-[#e0cdad]">
+          <th className="p-1">Date</th>
+          <th className="p-1">Workout</th>
+          <th className="p-1">Duration</th>
+        </tr>
+      </thead>
+      <tbody>
+        {workouts.map(w => (
+          <tr key={w.id} className="border-b border-[#d4c3a3]">
+            <td className="p-1">{new Date(w.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+            <td className="p-1">{w.name}</td>
+            <td className="p-1">{w.duration} min</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+</div>
           </div>
 
         </div>

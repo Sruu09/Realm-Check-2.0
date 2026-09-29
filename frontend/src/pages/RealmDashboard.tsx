@@ -6,7 +6,7 @@ import RealmEnvironment from '../components/realm/RealmEnvironment';
 import LocationNode from '../components/realm/LocationNode';
 
 const locations = [
-  { id: 'castle', name: 'Castle', subtitle: 'Jobs & Careers', top: '25%', left: '50%', icon: <span className="text-6xl">🏰</span>, bgClass: 'bg-[#e6d5b8]', sizeClass: 'w-28 h-28', route: '/castle' },
+  { id: 'castle', name: 'Castle', subtitle: 'Central Hub', top: '25%', left: '50%', icon: <span className="text-6xl">🏰</span>, bgClass: 'bg-[#e6d5b8]', sizeClass: 'w-28 h-28', route: '/castle' },
   { id: 'library', name: 'Library', subtitle: 'Resources & Scholarships', top: '35%', left: '25%', icon: <span className="text-4xl">🏛️</span>, bgClass: 'bg-[#fcf5e3]', route: '/library' },
   { id: 'pond', name: 'Pond', subtitle: 'Digital Journal', top: '55%', left: '20%', icon: <span className="text-4xl">💧</span>, bgClass: 'bg-blue-300', route: '/pond' },
   { id: 'garden', name: 'Garden', subtitle: 'Fitness & Wellness', top: '75%', left: '25%', icon: <span className="text-4xl">🌻</span>, bgClass: 'bg-green-600', route: '/garden' },

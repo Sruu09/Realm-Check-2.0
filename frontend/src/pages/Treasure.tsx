@@ -134,7 +134,7 @@ const Treasure: React.FC = () => {
                 <div className="absolute right-0 bottom-0 text-8xl opacity-10">💰</div>
                 <div>
                   <p className="text-[#a3907c] font-bold text-xs uppercase tracking-wider mb-1">Total Current Savings</p>
-                  <p className="font-pixel text-4xl text-yellow-500">₹ {totalSavings.toLocaleString()}</p>
+                  <p className="font-pixel text-4xl text-yellow-500">₹ { (totalSavings ?? 0).toLocaleString() }</p>
                 </div>
                 <div className="flex gap-6 text-right">
                   <div>
