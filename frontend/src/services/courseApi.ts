@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: 'http://localhost:8081',
 });
 
 export interface CourseDTO {
@@ -18,7 +18,9 @@ export interface CourseDTO {
 }
 
 export const fetchCourses = () => api.get<CourseDTO[]>('/api/courses');
-export const searchCourses = (q: string) => api.get<CourseDTO[]>(`/api/courses/search?q=${q}`);
+export const fetchCoursesPaged = (page: number = 0, size: number = 12) =>
+  api.get<CourseDTO[]>(`/api/education/courses/paged?page=${page}&size=${size}`);
+
 export const filterCoursesByCategory = (cat: string) =>
   api.get<CourseDTO[]>(`/api/courses/category/${cat}`);
 export const filterCoursesByProvider = (provider: string) =>

@@ -31,6 +31,28 @@ public class SavingsTransactionService {
     }
 
     @Transactional
+    public SavingsTransaction updateTransaction(Long id, SavingsTransaction newTx) {
+        SavingsTransaction existing = savingsTransactionRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Transaction not found"));
+        
+        // Reverse old transaction impact
+        double reverseAmount = "DEPOSIT".equals(existing.getType()) ? -existing.getAmount() : existing.getAmount();
+        userService.updateSavings(existing.getUserId(), reverseAmount);
+
+        // Apply updated transaction details
+        existing.setAmount(newTx.getAmount());
+        existing.setDescription(newTx.getDescription());
+        existing.setCategory(newTx.getCategory());
+        existing.setType(newTx.getType());
+        
+        SavingsTransaction saved = savingsTransactionRepository.save(existing);
+        double newAmount = "DEPOSIT".equals(saved.getType()) ? saved.getAmount() : -saved.getAmount();
+        userService.updateSavings(saved.getUserId(), newAmount);
+        
+        return saved;
+    }
+
+    @Transactional
     public void deleteTransaction(Long id) {
         savingsTransactionRepository.findById(id).ifPresent(tx -> {
             double amount = "DEPOSIT".equals(tx.getType()) ? -tx.getAmount() : tx.getAmount();

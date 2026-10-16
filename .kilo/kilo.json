@@ -1,0 +1,10 @@
+{
+  "permission": {
+    "read": {
+      "C:/Users/HP/Desktop/RC 2.0/.kilo/gsd-core/*": "allow"
+    },
+    "external_directory": {
+      "C:/Users/HP/Desktop/RC 2.0/.kilo/gsd-core/*": "allow"
+    }
+  }
+}

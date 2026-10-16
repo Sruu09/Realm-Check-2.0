@@ -5,7 +5,8 @@ import com.realmcheck.backend.entity.Course;
 import com.realmcheck.backend.entity.CourseProgress;
 import com.realmcheck.backend.repository.CourseProgressRepository;
 import com.realmcheck.backend.repository.CourseRepository;
-import com.realmcheck.backend.service.UserService;
+import com.realmcheck.backend.service.GameProgressService;
+import com.realmcheck.backend.entity.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -18,13 +19,24 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final CourseProgressRepository progressRepository;
     private final UserService userService;
+    private final GameProgressService gameProgressService;
+
+    // ---------- Pagination ----------
+    public java.util.List<com.realmcheck.backend.dto.CourseDTO> getCoursesPage(int page, int size) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        return courseRepository.findAll(pageable).stream()
+                .map(this::toDto)
+                .collect(java.util.stream.Collectors.toList());
+    }
 
     public CourseService(CourseRepository courseRepository,
                          CourseProgressRepository progressRepository,
-                         UserService userService) {
+                         UserService userService,
+                         GameProgressService gameProgressService) {
         this.courseRepository = courseRepository;
         this.progressRepository = progressRepository;
         this.userService = userService;
+        this.gameProgressService = gameProgressService;
     }
 
     // ---------- Retrieval ----------
@@ -35,7 +47,10 @@ public class CourseService {
     }
 
     public List<CourseDTO> searchByKeyword(String keyword) {
-        return courseRepository.findByTitleContainingIgnoreCase(keyword).stream()
+        if (keyword == null || keyword.isBlank()) {
+            return getAllCourses();
+        }
+        return courseRepository.searchCourses(keyword.trim()).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
@@ -85,7 +100,8 @@ public class CourseService {
         // award XP only once
         if (!Boolean.TRUE.equals(cp.getXpAwarded())) {
             // simplistic XP award: 100 points per course
-            userService.addXpAndGold(userId, 100, 0);
+            User user = userService.getUserById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+            gameProgressService.addXp(user, 100);
             cp.setXpAwarded(true);
         }
         progressRepository.save(cp);

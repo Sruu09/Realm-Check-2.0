@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Plus, Check } from 'lucide-react';
-import { getQuests, updateQuest, createQuest, type Quest } from '../services/QuestService';
+import { getQuests, createQuest, completeQuest, isQuestCompletedToday, type Quest } from '../services/QuestService';
 import { getJournalEntries, createJournalEntry, updateJournalEntry, deleteJournalEntry, type JournalEntry } from '../services/JournalService';
 
 const Pond: React.FC = () => {
@@ -20,20 +20,26 @@ const Pond: React.FC = () => {
   const [moodFilter, setMoodFilter] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  const userId = 1;
+  const userId = Number(localStorage.getItem('userId') ?? 1);
 
   useEffect(() => {
     fetchQuests();
     fetchEntries();
   }, []);
 
-  const fetchQuests = async () => {
-    try {
-      const res = await getQuests(userId);
-      setQuests(res);
-    } catch (e) { console.error(e); }
-  };
-
+const fetchQuests = async () => {
+  try {
+    const res = await getQuests(userId);
+    const enriched = await Promise.all(res.map(async (q) => {
+      if (q.isDaily) {
+        const completedToday = await isQuestCompletedToday(q.id);
+        return { ...q, completedToday };
+      }
+      return q;
+    }));
+    setQuests(enriched);
+  } catch (e) { console.error(e); }
+};
   const fetchEntries = async () => {
     try {
       const res = await getJournalEntries(userId);
@@ -41,26 +47,28 @@ const Pond: React.FC = () => {
     } catch(e) { console.error(e); }
   };
 
-  const handleToggleQuest = async (quest: Quest) => {
+    const handleToggleQuest = async (quest: Quest) => {
     try {
-      let newStatus = quest.status;
-      if (quest.status === 'AVAILABLE') newStatus = 'ACTIVE';
-      else if (quest.status === 'ACTIVE') newStatus = 'COMPLETED';
-      else return; 
-      
-      await updateQuest(quest.id, newStatus);
-      if (newStatus === 'COMPLETED') {
-        window.dispatchEvent(new Event('player-stats-updated'));
-        window.dispatchEvent(new CustomEvent('realm-notify', { detail: '✓ Quest Completed! XP & Gold earned.' }));
+      // Prevent completing a daily quest again on the same day
+      if (quest.isDaily && (quest as any).completedToday) {
+        return;
       }
+      // Direct completion: one click should complete the quest and award XP
+      if (quest.status === 'COMPLETED') {
+        // already done – nothing to do
+        return;
+      }
+      // For AVAILABLE or ACTIVE quests, trigger completion
+      await completeQuest(quest.id);
+      window.dispatchEvent(new Event('player-stats-updated'));
+      window.dispatchEvent(new CustomEvent('realm-notify', { detail: '✓ Quest Completed! XP earned.' }));
       fetchQuests();
     } catch (e) { console.error(e); }
   };
-
   const handleAddQuest = async () => {
     if (!newQuestTitle.trim()) return;
     try {
-      await createQuest({ userId, title: newQuestTitle, description: 'Custom', difficulty: 'EASY', xpReward: 10, goldReward: 5, status: 'AVAILABLE', isDaily: false });
+      await createQuest({ userId, title: newQuestTitle, description: 'Custom', difficulty: 'EASY', xpReward: 10, status: 'AVAILABLE', isDaily: false });
       setNewQuestTitle('');
       setShowAddForm(false);
       fetchQuests();
@@ -115,135 +123,270 @@ const Pond: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#5c8a4c] p-8 flex items-center justify-center relative overflow-hidden font-body select-none">
+    <div className="min-h-screen bg-[#244b46] p-4 md:p-8 flex items-center justify-center relative overflow-hidden font-body select-none">
       
-      <div className="absolute inset-0 opacity-40 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#4d7a3d 15%, transparent 15%), radial-gradient(#4d7a3d 15%, transparent 15%)', backgroundSize: '40px 40px', backgroundPosition: '0 0, 20px 20px' }} />
+      {/* Serene Lake Ripple Background Pattern */}
+      <div 
+        className="absolute inset-0 opacity-25 pointer-events-none" 
+        style={{
+          backgroundImage: `
+            radial-gradient(#3a6b64 15%, transparent 16%),
+            linear-gradient(45deg, #1b3d39 25%, transparent 25%, transparent 75%, #1b3d39 75%, #1b3d39)
+          `,
+          backgroundSize: '36px 36px, 18px 18px',
+          backgroundPosition: '0 0, 9px 9px'
+        }} 
+      />
 
-      <button onClick={() => navigate('/realm')} className="absolute top-6 left-6 z-50 bg-[#e0cdad] border-4 border-[#7a5e3f] p-3 rounded-lg shadow-xl hover:-translate-y-1 transition-transform flex items-center gap-2 text-[#4a3b2c] font-bold">
-        <ChevronLeft /> Back to Realm
+      {/* Floating Back Button */}
+      <button 
+        onClick={() => navigate('/realm')} 
+        className="absolute top-4 left-4 md:top-6 md:left-6 z-50 bg-[#fcf8ee] border-2 border-[#8da399] px-3.5 py-2 rounded-xl shadow-lg hover:bg-white hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center gap-2 text-[#244b46] font-bold text-xs"
+      >
+        <ChevronLeft size={16} /> Back to Realm
       </button>
 
-      <div className="relative z-10 w-full max-w-5xl h-[85vh] flex flex-col items-center justify-center">
+      {/* Main Lakeside Sanctuary Container */}
+      <div className="relative z-10 w-full max-w-6xl bg-[#f8f5ed] rounded-2xl border-4 border-[#3d695e] shadow-[0_20px_50px_rgba(0,0,0,0.5),_inset_0_0_24px_rgba(45,104,136,0.15)] flex flex-col h-[88vh] overflow-hidden mt-6 ring-2 ring-[#76b8da]/30">
         
-        {/* The Pond */}
-        <div className="w-[600px] h-[350px] bg-blue-400 rounded-[200px] border-[16px] border-[#8a8d91] shadow-[inset_0_20px_50px_rgba(0,0,0,0.2),0_20px_40px_rgba(0,0,0,0.5)] relative flex items-center justify-center mt-[-80px]">
-           <div className="absolute w-[80%] h-[80%] border-4 border-blue-300 rounded-[200px] opacity-30" />
-           <div className="absolute w-[60%] h-[60%] border-4 border-blue-300 rounded-[200px] opacity-20" />
-           {quests.slice(0, 4).map((q, i) => {
-             const positions = [{ top: '20%', left: '20%' }, { top: '30%', right: '30%' }, { bottom: '30%', left: '40%' }, { bottom: '20%', right: '20%' }];
-             return (<div key={q.id} className="absolute transform -translate-x-1/2 -translate-y-1/2 text-5xl filter drop-shadow-lg" style={positions[i]}>{q.status === 'COMPLETED' ? '🌸' : '🌱'}</div>);
-           })}
-        </div>
-
-        {/* Quest Board */}
-        <div className="absolute top-10 right-0 w-80 bg-[#fcf5e3] rounded-xl border-4 border-[#b58c5a] shadow-2xl p-4 flex flex-col z-20 max-h-[60vh] overflow-hidden flex flex-col">
-          <div className="flex justify-between items-center mb-4 border-b-2 border-[#d4c3a3] pb-2">
-             <h3 className="font-pixel text-[#4a3b2c] text-sm tracking-wider uppercase">Quests</h3>
-             <button onClick={() => setShowAddForm(!showAddForm)} className="bg-green-600 text-white p-1 rounded hover:bg-green-700 shadow"><Plus size={16}/></button>
-          </div>
-          
-          {showAddForm && (
-            <div className="mb-4 flex gap-2">
-              <input type="text" value={newQuestTitle} onChange={e => setNewQuestTitle(e.target.value)} placeholder="New Quest..." className="flex-grow bg-white border-2 border-[#d4c3a3] rounded p-2 text-sm font-bold text-[#4a3b2c]" />
-              <button onClick={handleAddQuest} className="bg-[#a3222a] text-white px-3 font-bold rounded shadow border-b-2 border-[#591015]">Add</button>
+        {/* Lake Sanctuary Header */}
+        <div className="bg-[#19332f] px-6 py-4 flex items-center justify-between border-b-4 border-[#0f1f1d] relative flex-shrink-0 shadow-md">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 bg-[#254d46] border-2 border-[#6ee7b7] rounded-xl flex items-center justify-center text-2xl shadow-[0_0_12px_rgba(110,231,183,0.3)]">
+              ⛲
             </div>
-          )}
-
-          <div className="flex flex-col gap-2 overflow-y-auto custom-scrollbar flex-grow pr-1">
-            {quests.length === 0 && <p className="text-xs font-bold text-[#8c7457] text-center mt-4">No active quests.</p>}
-            {quests.map(q => (
-              <div key={q.id} onClick={() => handleToggleQuest(q)} className={`flex flex-col p-2 bg-white rounded border-2 cursor-pointer transition-colors group ${q.status === 'COMPLETED' ? 'border-green-400 bg-green-50' : 'border-[#d4c3a3] hover:border-[#b58c5a]'}`}>
-                <div className="flex items-center gap-3">
-                  <div className={`w-6 h-6 rounded flex items-center justify-center border-2 ${q.status === 'COMPLETED' ? 'bg-green-500 border-green-600' : q.status === 'ACTIVE' ? 'bg-yellow-400 border-yellow-600' : 'bg-gray-100 border-gray-300'}`}>
-                    {q.status === 'COMPLETED' && <Check size={14} className="text-white" />}
-                    {q.status === 'ACTIVE' && <span className="text-[10px] font-bold text-yellow-900">!</span>}
-                  </div>
-                  <span className={`text-sm font-bold flex-grow ${q.status === 'COMPLETED' ? 'text-gray-400 line-through' : 'text-[#4a3b2c]'}`}>{q.title}</span>
-                </div>
-                {q.status !== 'COMPLETED' && (
-                  <div className="flex justify-between mt-2 ml-9">
-                    <span className="text-[9px] font-bold text-blue-500 bg-blue-100 px-1 rounded">+{q.xpReward} XP</span>
-                    <span className="text-[9px] font-bold text-yellow-600 bg-yellow-100 px-1 rounded">+{q.goldReward} Gold</span>
-                  </div>
-                )}
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="font-pixel text-sm md:text-base text-[#e6fbf4] tracking-wide uppercase drop-shadow-sm">Reflective Lake Sanctuary</h1>
+                <span className="hidden sm:inline-block bg-[#047857] text-[#ecfdf5] text-[9px] font-pixel px-2 py-0.5 rounded border border-[#6ee7b7]/40">FOUNTAIN SHORE</span>
               </div>
+              <p className="text-xs text-[#a7d9cb] font-medium mt-0.5">Gentle ripples, aquatic lily pads, and mindful daily reflection ledger</p>
+            </div>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-2 text-xs text-[#a7f3d0] font-medium bg-[#112421] px-3.5 py-1.5 rounded-lg border border-[#2b5951] shadow-inner">
+            <span className="animate-pulse">💧</span>
+            <span>Tranquil Waters</span>
+          </div>
+
+          {/* Mood Stepping Stones Bar in Header */}
+          <div className="flex items-center gap-1.5 bg-[#172d2a] px-3 py-1.5 rounded-xl border border-[#3b5e57]">
+            <span className="text-[10px] text-[#9fc4bc] font-bold mr-1 hidden sm:inline">Mood:</span>
+            {moods.map(m => (
+              <button 
+                key={m.id} 
+                onClick={() => setMood(m.id)} 
+                title={`Feel ${m.id}`}
+                className={`text-lg w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                  mood === m.id 
+                    ? 'bg-[#3b6b63] border-2 border-[#99f6e4] scale-110 shadow-sm' 
+                    : 'hover:bg-[#254641] opacity-75 hover:opacity-100 border border-transparent'
+                }`}
+              >
+                {m.icon}
+              </button>
             ))}
           </div>
         </div>
 
-        {/* Mood Selector */}
-        <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-[#364259] rounded-full border-4 border-[#252d3d] shadow-xl p-2 flex gap-2 z-20">
-           {moods.map(m => (
-             <button key={m.id} onClick={() => setMood(m.id)} className={`text-2xl w-10 h-10 rounded-full flex items-center justify-center transition-all ${mood === m.id ? 'bg-[#1a233a] border-2 border-yellow-400 scale-110' : 'hover:bg-[#4a5a7a] border-2 border-transparent'}`}>
-               {m.icon}
-             </button>
-           ))}
-        </div>
+        {/* Lake Content Split: Left Dock (Quests + Lake) | Right Ledger (Journal) */}
+        <div className="flex-grow p-4 md:p-6 flex flex-col md:flex-row gap-6 overflow-hidden bg-[#fbf9f4]">
+          
+          {/* Left Column: Floating Lotus Pond & Quest Scroll */}
+          <div className="w-full md:w-1/2 flex flex-col gap-4 overflow-hidden">
+            
+            {/* Visual Lotus Pond with Lilies */}
+            <div className="h-44 bg-[#418a99] rounded-2xl border-4 border-[#285c67] shadow-inner relative flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_center,_#93c5fd_10%,_transparent_70%)]" />
+              <div className="absolute w-[80%] h-[75%] border-2 border-white/20 rounded-full" />
+              
+              {/* Floating Lotus Lilies for Quests */}
+              <div className="relative z-10 flex items-center justify-around w-full px-6">
+                {quests.slice(0, 4).map((q) => (
+                  <div key={q.id} className="flex flex-col items-center group cursor-pointer" onClick={() => handleToggleQuest(q)}>
+                    <span className="text-4xl filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.3)] transition-transform group-hover:scale-125">
+                      {q.status === 'COMPLETED' ? '🪷' : '🌱'}
+                    </span>
+                    <span className="text-[10px] font-bold text-[#f0fdfa] bg-[#134e4a]/80 px-2 py-0.5 rounded-full mt-1 max-w-[90px] truncate">
+                      {q.title}
+                    </span>
+                  </div>
+                ))}
+                {quests.length === 0 && (
+                  <span className="text-xs text-[#e0f2fe] font-semibold">The pond waters are quiet. Create a quest below.</span>
+                )}
+              </div>
+            </div>
 
-        {/* Journal Stone Wall */}
-        <div className="absolute bottom-0 w-[700px] h-56 bg-[#929699] rounded-t-lg border-x-4 border-t-4 border-[#6c7072] shadow-2xl p-6 relative overflow-hidden flex flex-col">
-          <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'linear-gradient(90deg, #505456 2px, transparent 2px), linear-gradient(#505456 2px, transparent 2px)', backgroundSize: '60px 40px' }} />
-          
-          <div className="relative z-10 flex justify-between items-center mb-2">
-            <h3 className="font-pixel text-[#3a3d3d] text-sm uppercase tracking-widest">{editingId ? 'Edit Entry' : 'Journal'}</h3>
-            <button onClick={() => setShowHistory(!showHistory)} className="text-xs font-bold bg-[#6c7072] text-white px-2 py-1 rounded shadow hover:bg-[#4a4d4f]">History</button>
-          </div>
-          
-          <textarea 
-            value={journalContent}
-            onChange={e => setJournalContent(e.target.value)}
-            className="flex-grow w-full bg-transparent resize-none outline-none font-bold text-[#2a2d2d] placeholder-[#6c7072] text-lg leading-relaxed relative z-10"
-            placeholder="Inscribe your thoughts here..."
-          />
-          
-          <div className="relative z-10 mt-2 flex justify-between items-center">
-            <input 
-              type="text" 
-              value={journalTags}
-              onChange={e => setJournalTags(e.target.value)}
-              placeholder="#tags (e.g. #study #college)"
-              className="bg-transparent outline-none text-[#3a3d3d] font-bold text-xs border-b border-[#6c7072] w-1/2"
-            />
-            <div className="flex gap-2">
-              {editingId && <button onClick={() => {setEditingId(null); setJournalContent(''); setJournalTags('');}} className="bg-red-400 hover:bg-red-500 text-white px-3 py-1 rounded text-xs font-bold shadow">Cancel</button>}
-              <button onClick={handleSaveJournal} className="bg-[#4a4d4f] hover:bg-[#3a3d3d] text-white px-4 py-1 rounded text-xs font-bold font-pixel shadow border-b-2 border-[#2a2d2d] active:translate-y-[2px] active:border-0 transition-all">{editingId ? 'Update' : 'Save'}</button>
+            {/* Daily Quest Board Notice */}
+            <div className="flex-grow bg-white border-2 border-[#d0dfda] rounded-2xl p-4 shadow-sm flex flex-col overflow-hidden">
+              <div className="flex justify-between items-center mb-3 pb-2 border-b border-[#e2ece8]">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-pixel text-[#244b46] text-xs uppercase tracking-wider">Quest Checklist</h3>
+                  <span className="text-[10px] bg-[#dcfce7] text-[#15803d] border border-[#86efac] font-bold px-2 py-0.5 rounded-full">
+                    {quests.filter(q => q.status === 'COMPLETED').length}/{quests.length} Done
+                  </span>
+                </div>
+                <button 
+                  onClick={() => setShowAddForm(!showAddForm)} 
+                  className="bg-[#244b46] hover:bg-[#1a3834] text-white p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm transition-colors"
+                >
+                  <Plus size={14}/> Add Quest
+                </button>
+              </div>
+
+              {showAddForm && (
+                <div className="mb-3 flex gap-2 p-2 bg-[#f0fdfa] rounded-xl border border-[#ccfbf1]">
+                  <input 
+                    type="text" 
+                    value={newQuestTitle} 
+                    onChange={e => setNewQuestTitle(e.target.value)} 
+                    placeholder="New quest objective..." 
+                    className="flex-grow bg-white border border-[#99f6e4] rounded-lg p-2 text-xs font-semibold text-[#134e4a] outline-none" 
+                    onKeyDown={e => e.key === 'Enter' && handleAddQuest()}
+                  />
+                  <button 
+                    onClick={handleAddQuest} 
+                    className="bg-[#0f766e] hover:bg-[#115e59] text-white px-3 font-bold rounded-lg text-xs transition-colors"
+                  >
+                    Commit
+                  </button>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-2 overflow-y-auto custom-scrollbar flex-grow pr-1">
+                {quests.length === 0 && <p className="text-xs font-semibold text-[#64748b] text-center my-auto">No quests in the journal.</p>}
+                {quests.map(q => (
+                  <div 
+                    key={q.id} 
+                    onClick={() => handleToggleQuest(q)} 
+                    className={`flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer ${
+                      q.status === 'COMPLETED' 
+                        ? 'border-[#bbf7d0] bg-[#f0fdf4]' 
+                        : 'border-[#e2e8f0] bg-[#fafafa] hover:border-[#99f6e4] hover:bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 flex-grow">
+                      <div className={`w-5 h-5 rounded-md flex items-center justify-center border ${
+                        q.status === 'COMPLETED' ? 'bg-[#22c55e] border-[#16a34a]' : 'bg-white border-[#cbd5e1]'
+                      }`}>
+                        {q.status === 'COMPLETED' && <Check size={12} className="text-white" />}
+                      </div>
+                      <span className={`text-xs font-semibold ${q.status === 'COMPLETED' ? 'text-gray-400 line-through' : 'text-[#1e293b]'}`}>
+                        {q.title}
+                      </span>
+                    </div>
+                    {q.status !== 'COMPLETED' && (
+                      <span className="text-[10px] font-bold text-[#0284c7] bg-[#e0f2fe] border border-[#bae6fd] px-2 py-0.5 rounded-md ml-2 flex-shrink-0">
+                        +{q.xpReward} XP
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
+
+          {/* Right Column: Inscription Ledger & Historical Archives */}
+          <div className="w-full md:w-1/2 bg-white border-2 border-[#d0dfda] rounded-2xl p-5 shadow-sm flex flex-col justify-between overflow-hidden">
+            <div>
+              <div className="flex justify-between items-center mb-3 pb-2 border-b border-[#e2ece8]">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-pixel text-[#244b46] text-xs uppercase tracking-wider">
+                    {editingId ? 'Edit Thought Inscription' : 'Reflective Journal'}
+                  </h3>
+                  <span className="text-base" title={`Current mood: ${mood}`}>
+                    {moods.find(m => m.id === mood)?.icon}
+                  </span>
+                </div>
+                <button 
+                  onClick={() => setShowHistory(!showHistory)} 
+                  className="text-xs font-bold bg-[#e0f2fe] hover:bg-[#bae6fd] text-[#0369a1] border border-[#7dd3fc] px-3 py-1 rounded-lg transition-colors"
+                >
+                  Archives ({entries.length})
+                </button>
+              </div>
+
+              <textarea 
+                value={journalContent}
+                onChange={e => setJournalContent(e.target.value)}
+                className="w-full h-52 bg-[#fdfaf2] border border-[#e8decb] rounded-xl p-3.5 resize-none outline-none font-medium text-[#2d3748] placeholder-[#94a3b8] text-sm leading-relaxed focus:border-[#5b7a70] transition-colors"
+                placeholder="Inscribe today's mindful thoughts, academic progress, or questions..."
+              />
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-[#e2ece8] flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+              <input 
+                type="text" 
+                value={journalTags}
+                onChange={e => setJournalTags(e.target.value)}
+                placeholder="#tags (e.g. #career #focus #exam)"
+                className="bg-[#f8fafc] border border-[#cbd5e1] rounded-lg px-3 py-1.5 outline-none text-[#334155] font-semibold text-xs flex-grow focus:border-[#5b7a70]"
+              />
+              <div className="flex gap-2 justify-end">
+                {editingId && (
+                  <button 
+                    onClick={() => { setEditingId(null); setJournalContent(''); setJournalTags(''); }} 
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                  >
+                    Cancel
+                  </button>
+                )}
+                <button 
+                  onClick={handleSaveJournal} 
+                  className="bg-[#244b46] hover:bg-[#1b3935] text-white px-5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm"
+                >
+                  {editingId ? 'Update Inscription' : 'Inscribe in Stone'}
+                </button>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         {/* History Modal */}
         {showHistory && (
-          <div className="absolute inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-8">
-            <div className="bg-[#fcf5e3] w-full max-w-3xl h-[80vh] rounded-xl border-4 border-[#b58c5a] shadow-2xl flex flex-col overflow-hidden">
-              <div className="bg-[#e0cdad] p-4 border-b-4 border-[#b58c5a] flex justify-between items-center shrink-0">
-                <h2 className="font-pixel text-[#4a3b2c]">Journal Archives</h2>
-                <button onClick={() => setShowHistory(false)} className="text-[#8c7457] hover:text-[#4a3b2c] font-bold">✕ Close</button>
+          <div className="absolute inset-0 bg-black/60 z-50 flex items-center justify-center p-4 md:p-8">
+            <div className="bg-[#fcfaf5] w-full max-w-3xl h-[80vh] rounded-2xl border-4 border-[#5b7a70] shadow-2xl flex flex-col overflow-hidden">
+              <div className="bg-[#213f3b] p-4 text-[#f0f9f6] flex justify-between items-center shrink-0">
+                <h2 className="font-pixel text-sm uppercase tracking-wider">Reflective Journal Archives</h2>
+                <button onClick={() => setShowHistory(false)} className="text-[#a3c9c1] hover:text-white font-bold text-sm">✕ Close</button>
               </div>
-              <div className="p-4 flex gap-4 bg-white border-b-2 border-[#d4c3a3] shrink-0">
-                <input type="text" placeholder="Search entries or tags..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="flex-grow border-2 border-[#d4c3a3] rounded p-2 text-sm font-bold text-[#4a3b2c] outline-none" />
-                <select value={moodFilter} onChange={e => setMoodFilter(e.target.value)} className="border-2 border-[#d4c3a3] rounded p-2 text-sm font-bold text-[#4a3b2c] outline-none">
+              <div className="p-3.5 flex gap-3 bg-white border-b border-[#e2ece8] shrink-0">
+                <input 
+                  type="text" 
+                  placeholder="Search entries or #tags..." 
+                  value={searchQuery} 
+                  onChange={e => setSearchQuery(e.target.value)} 
+                  className="flex-grow border border-[#cbd5e1] rounded-lg p-2 text-xs font-semibold text-[#1e293b] outline-none focus:border-[#5b7a70]" 
+                />
+                <select 
+                  value={moodFilter} 
+                  onChange={e => setMoodFilter(e.target.value)} 
+                  className="border border-[#cbd5e1] rounded-lg p-2 text-xs font-bold text-[#1e293b] outline-none"
+                >
                   <option value="">All Moods</option>
                   {moods.map(m => <option key={m.id} value={m.id}>{m.icon} {m.id}</option>)}
                 </select>
               </div>
-              <div className="flex-grow overflow-y-auto p-4 flex flex-col gap-4 custom-scrollbar">
+              <div className="flex-grow overflow-y-auto p-4 flex flex-col gap-3 custom-scrollbar">
                 {filteredEntries.map(e => (
-                  <div key={e.id} className="bg-white border-2 border-[#d4c3a3] p-4 rounded shadow-sm flex flex-col">
-                     <div className="flex justify-between items-center mb-2">
-                       <span className="text-2xl">{moods.find(m => m.id === e.mood)?.icon}</span>
-                       <div className="flex gap-2">
-                         <button onClick={() => handleEditEntry(e)} className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded font-bold">Edit</button>
-                         <button onClick={() => handleDeleteEntry(e.id)} className="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded font-bold">Delete</button>
-                       </div>
-                     </div>
-                     <p className="text-[#4a3b2c] font-bold mb-3 whitespace-pre-wrap leading-relaxed">{e.content}</p>
-                     <div className="flex justify-between items-center mt-2 border-t pt-3 border-gray-100">
-                       <span className="text-xs text-blue-500 font-bold bg-blue-50 px-2 py-1 rounded">{e.tags || 'No tags'}</span>
-                       <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{new Date(e.date).toLocaleString()}</span>
-                     </div>
+                  <div key={e.id} className="bg-white border border-[#e2e8f0] p-4 rounded-xl shadow-sm flex flex-col hover:border-[#99f6e4] transition-all">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-2xl">{moods.find(m => m.id === e.mood)?.icon || '☀️'}</span>
+                      <div className="flex gap-2">
+                        <button onClick={() => handleEditEntry(e)} className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-2.5 py-1 rounded-md font-bold transition-colors">Edit</button>
+                        <button onClick={() => handleDeleteEntry(e.id)} className="text-xs bg-red-50 hover:bg-red-100 text-red-700 px-2.5 py-1 rounded-md font-bold transition-colors">Delete</button>
+                      </div>
+                    </div>
+                    <p className="text-[#334155] font-normal mb-3 whitespace-pre-wrap leading-relaxed text-xs">{e.content}</p>
+                    <div className="flex justify-between items-center border-t border-gray-100 pt-2">
+                      <span className="text-[10px] text-teal-700 font-bold bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-md">{e.tags || 'No tags'}</span>
+                      <span className="text-[10px] text-gray-400 font-medium uppercase">{new Date(e.date).toLocaleString()}</span>
+                    </div>
                   </div>
                 ))}
-                {filteredEntries.length === 0 && <div className="text-center font-bold text-[#8c7457] mt-10">No entries match your search.</div>}
+                {filteredEntries.length === 0 && <div className="text-center font-bold text-[#64748b] my-auto">No reflections match your search.</div>}
               </div>
             </div>
           </div>

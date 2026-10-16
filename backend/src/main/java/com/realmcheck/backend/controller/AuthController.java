@@ -27,11 +27,18 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody AuthRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("Email already exists");
+        Optional<User> existing = userRepository.findByEmail(request.getEmail());
+        if (existing.isPresent()) {
+            User existingUser = existing.get();
+            return ResponseEntity.ok(new AuthResponse("mock-jwt-token-123", existingUser.getUserId(), false));
         }
 
         User user = new User();
+        user.setUsername(
+            request.getName() != null && !request.getName().trim().isEmpty()
+                ? request.getName().trim()
+                : request.getEmail()
+        );
         user.setEmail(request.getEmail());
         user.setName(request.getName());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
@@ -44,7 +51,11 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+        // Try to find user by email first; if not found, fall back to username
         Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
+        if (userOpt.isEmpty()) {
+            userOpt = userRepository.findByUsername(request.getEmail());
+        }
         if (userOpt.isEmpty() || !passwordEncoder.matches(request.getPassword(), userOpt.get().getPasswordHash())) {
             return ResponseEntity.status(401).body("Invalid credentials");
         }

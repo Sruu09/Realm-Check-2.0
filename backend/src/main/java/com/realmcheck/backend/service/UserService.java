@@ -19,30 +19,13 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-    @Transactional
-    public void addXpAndGold(Long userId, int xpAmount, int goldAmount) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        user.setGold(user.getGold() + goldAmount);
-        
-        int totalXp = user.getXp() + xpAmount;
-        int level = user.getLevel();
-        int xpRequired = level * 100;
-        
-        while (totalXp >= xpRequired) {
-            totalXp -= xpRequired;
-            level++;
-            xpRequired = level * 100;
-        }
-        
-        user.setXp(totalXp);
-        user.setLevel(level);
-        userRepository.save(user);
-    }
+
 
     @Transactional
     public void updateSavings(Long userId, double amount) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        user.setSavings(user.getSavings() + amount);
+        double currentSavings = user.getSavings() != null ? user.getSavings() : 0.0;
+        user.setSavings(currentSavings + amount);
         userRepository.save(user);
     }
 

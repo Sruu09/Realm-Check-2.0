@@ -17,3 +17,40 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Press Start 2P', monospace;
 }
+
+/* Custom RPG Scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1e4cd;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #b59f7b;
+  border-radius: 4px;
+  border: 1px solid #8e7855;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #96815e;
+}
+
+/* Dark RPG Scrollbar (Wizard / Arena) */
+.dark-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.dark-scrollbar::-webkit-scrollbar-track {
+  background: #1e1b2e;
+  border-radius: 4px;
+}
+.dark-scrollbar::-webkit-scrollbar-thumb {
+  background: #4a3e6b;
+  border-radius: 4px;
+  border: 1px solid #2d2447;
+}
+.dark-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #62538c;
+}
+

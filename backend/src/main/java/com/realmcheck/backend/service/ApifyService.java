@@ -21,23 +21,37 @@ public class ApifyService {
 
     public Object searchCourses(String search) {
         try {
-            String url = "https://api.apify.com/v2/acts/crawlerbros~class-central-scraper/run-sync-get-dataset-items?token=" + apiToken;
+            String url = "https://api.apify.com/v2/acts/powerai~classcentral-search-scraper/run-sync-get-dataset-items?token=" + apiToken;
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             
-            Map<String, String> body = new HashMap<>();
-            body.put("search", search);
+            Map<String, Object> body = new HashMap<>();
+            String encoded = java.net.URLEncoder.encode(search, java.nio.charset.StandardCharsets.UTF_8);
+            body.put("searchUrl", "https://www.classcentral.com/search?q=" + encoded);
+            body.put("maxItems", 20);
             
-            HttpEntity<Map<String, String>> entity = new HttpEntity<>(body, headers);
-            
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+            // Expect the actor to return a JSON array directly; use Object response type
             ResponseEntity<Object> response = restTemplate.exchange(
                     url,
                     HttpMethod.POST,
                     entity,
                     Object.class
             );
-            return response.getBody();
+            Object respBody = response.getBody();
+            // Defensive handling: if a wrapper map is returned, try to extract list
+            if (respBody instanceof java.util.List) {
+                return respBody;
+            } else if (respBody instanceof java.util.Map) {
+                java.util.Map<?, ?> map = (java.util.Map<?, ?>) respBody;
+                if (map.containsKey("data")) {
+                    return map.get("data");
+                }
+                return map;
+            }
+            return respBody;
         } catch (Exception e) {
             return "{\"error\": \"Failed to fetch data from Apify: " + e.getMessage() + "\"}";
         }

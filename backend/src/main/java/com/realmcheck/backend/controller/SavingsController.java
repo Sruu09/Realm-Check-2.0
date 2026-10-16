@@ -36,9 +36,7 @@ public class SavingsController {
     @PutMapping("/{id}")
     public ResponseEntity<SavingsTransactionDTO> updateTransaction(@PathVariable Long id, @RequestBody SavingsTransactionDTO dto) {
         SavingsTransaction transaction = toEntity(dto);
-        transaction.setId(id);
-        // Note: we'd need to adjust user savings accordingly, but for Phase 2 MVP we just overwrite
-        SavingsTransaction saved = savingsTransactionService.createTransaction(transaction); // createTransaction in service actually calls save() which handles updates too if ID exists
+        SavingsTransaction saved = savingsTransactionService.updateTransaction(id, transaction);
         return ResponseEntity.ok(toDTO(saved));
     }
 
@@ -67,6 +65,9 @@ public class SavingsController {
         tx.setDescription(dto.getDescription());
         tx.setCategory(dto.getCategory());
         tx.setType(dto.getType());
+        if (dto.getDate() != null) {
+            tx.setDate(dto.getDate());
+        }
         return tx;
     }
 }

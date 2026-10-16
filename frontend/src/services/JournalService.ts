@@ -7,7 +7,7 @@ export interface JournalEntry {
   tags: string;
 }
 
-const API_URL = 'http://localhost:8080/api/journals';
+const API_URL = 'http://localhost:8081/api/journals';
 
 export const getJournalEntries = async (userId: number): Promise<JournalEntry[]> => {
   const res = await fetch(`${API_URL}/user/${userId}`);

@@ -100,82 +100,178 @@ const Arena: React.FC = () => {
   const streak = uniqueDates.size;
 
   return (
-    <div className="min-h-screen bg-[#1a0f14] p-8 flex items-center justify-center relative font-body select-none">
-      <div className="absolute inset-0 opacity-30 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, #4a1525 0%, #1a0f14 70%)' }} />
+    <div className="min-h-screen bg-[#110914] p-4 md:p-8 flex items-center justify-center relative font-body select-none overflow-hidden">
+      {/* Dark Boss Chamber Ambient Texture */}
+      <div 
+        className="absolute inset-0 opacity-40 pointer-events-none" 
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at 50% 30%, #4a1528 0%, transparent 60%),
+            radial-gradient(#2a121e 15%, transparent 16%)
+          `,
+          backgroundSize: '100% 100%, 32px 32px'
+        }} 
+      />
 
-      <button onClick={() => navigate('/realm')} className="absolute top-6 left-6 z-50 bg-[#e0cdad] border-4 border-[#7a5e3f] p-3 rounded-lg shadow-xl hover:-translate-y-1 transition-transform flex items-center gap-2 text-[#4a3b2c] font-bold">
-        <ChevronLeft /> Back to Realm
+      {/* Floating Back Button */}
+      <button 
+        onClick={() => navigate('/realm')} 
+        className="absolute top-4 left-4 md:top-6 md:left-6 z-50 bg-[#24141e] border-2 border-[#542938] hover:border-[#a3222a] px-3.5 py-2 rounded-xl shadow-lg hover:bg-[#331c2b] transition-all flex items-center gap-2 text-[#f3d5dc] font-bold text-xs"
+      >
+        <ChevronLeft size={16} /> Back to Realm
       </button>
 
-      <div className="relative z-10 w-full max-w-6xl bg-[#2b1820] rounded-2xl border-8 border-[#170a0e] shadow-[0_20px_50px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden h-[85vh]">
+      {/* Main Coliseum Container */}
+      <div className="relative z-10 w-full max-w-6xl bg-[#1f1019] rounded-2xl border-4 border-[#421d2b] shadow-[0_20px_60px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden h-[88vh] mt-6">
         
         {/* Header Tabs */}
-        <div className="bg-[#e0cdad] border-b-8 border-[#7a5e3f] flex items-center justify-between px-8 py-3 shrink-0">
-          <div className="flex items-center gap-4">
-             <div className="w-12 h-12 bg-red-800 border-4 border-orange-500 rounded-full flex items-center justify-center text-white text-xl shadow-lg z-20">⚔️</div>
-             <h1 className="font-pixel text-xl text-[#4a3b2c] tracking-widest uppercase">Combat & Study</h1>
+        <div className="bg-[#29131f] border-b-2 border-[#451e2f] flex items-center justify-between px-6 py-3.5 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 bg-[#7f1d1d] border-2 border-[#ea580c] rounded-xl flex items-center justify-center text-white text-xl shadow-[0_0_15px_rgba(234,88,12,0.4)]">
+              ⚔️
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="font-pixel text-sm md:text-base text-[#fecdd3] tracking-widest uppercase">Arena — Exam Prep</h1>
+                <span className="hidden sm:inline-block bg-[#991b1b] text-[#fee2e2] text-[9px] font-pixel px-2 py-0.5 rounded">BOSS TRIAL</span>
+              </div>
+              <p className="text-[11px] text-[#cca5b0] font-medium mt-0.5">Defeat academic exam demons through logged study sessions</p>
+            </div>
           </div>
-          <div className="flex bg-[#d4c3a3] rounded-lg border-2 border-[#b58c5a] p-1">
-             <button onClick={() => setView('ARENA')} className={`px-4 py-2 rounded font-bold text-sm uppercase transition-colors ${view === 'ARENA' ? 'bg-[#a3222a] text-white shadow' : 'text-[#8c7457] hover:bg-[#e0cdad]'}`}>Battle Arena</button>
-             <button onClick={() => setView('STUDY')} className={`px-4 py-2 rounded font-bold text-sm uppercase transition-colors ${view === 'STUDY' ? 'bg-[#4a3b2c] text-white shadow' : 'text-[#8c7457] hover:bg-[#e0cdad]'}`}>Study Stats</button>
+          <div className="flex bg-[#160a12] rounded-xl border border-[#4d2033] p-1 gap-1">
+            <button 
+              onClick={() => setView('ARENA')} 
+              className={`px-4 py-2 rounded-lg font-pixel text-[10px] uppercase transition-all ${
+                view === 'ARENA' 
+                  ? 'bg-[#991b1b] text-white shadow-[0_0_12px_rgba(153,27,27,0.5)]' 
+                  : 'text-[#9c7985] hover:text-[#fecdd3]'
+              }`}
+            >
+              Battle Stage
+            </button>
+            <button 
+              onClick={() => setView('STUDY')} 
+              className={`px-4 py-2 rounded-lg font-pixel text-[10px] uppercase transition-all ${
+                view === 'STUDY' 
+                  ? 'bg-[#4c1d30] text-[#fecdd3] shadow' 
+                  : 'text-[#9c7985] hover:text-[#fecdd3]'
+              }`}
+            >
+              Study Ledger
+            </button>
           </div>
         </div>
 
-        <div className="flex-grow flex p-6 gap-6 relative z-10 overflow-hidden">
+        <div className="flex-grow flex p-4 md:p-6 gap-6 relative z-10 overflow-hidden bg-[#160b13]">
           
           {view === 'ARENA' ? (
             <>
-              {/* Left Side: The Battlefield */}
-              <div className="w-2/3 flex flex-col items-center justify-center relative">
-                 <div className="absolute bottom-10 w-[400px] h-40 bg-[#3d222c] rounded-[100%] border-4 border-[#170a0e] shadow-[inset_0_10px_20px_rgba(0,0,0,0.5)] transform rotate-x-60" />
-                 
-                 {/* The Boss */}
-                 <div className={`relative flex flex-col items-center z-10 transition-transform ${bossHpPercentage === 0 ? 'opacity-0 scale-50' : 'animate-bounce'}`} style={{ animationDuration: '3s' }}>
-                    <span className="font-pixel text-white text-sm mb-2 drop-shadow-md">{selectedExam?.name || 'No Boss Active'}</span>
-                    
-                    <div className="w-48 h-4 bg-[#170a0e] border-2 border-[#170a0e] rounded-sm mb-6 relative overflow-hidden shadow-[0_0_10px_rgba(255,0,0,0.3)]">
-                       <div className="h-full bg-red-600 transition-all duration-500" style={{ width: `${bossHpPercentage}%` }} />
-                    </div>
-                    
-                    <div className="w-32 h-40 bg-purple-900 border-4 border-purple-950 rounded-lg flex items-center justify-center relative shadow-[0_0_30px_rgba(147,51,234,0.5)]">
-                       <div className="absolute top-10 flex gap-4">
-                         <div className="w-4 h-4 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,1)]" />
-                         <div className="w-4 h-4 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,1)]" />
-                       </div>
-                       <div className="absolute top-20 flex gap-1">
-                          {[1,2,3,4].map(t => <div key={t} className="w-0 h-0 border-l-4 border-r-4 border-t-8 border-transparent border-t-white" />)}
-                       </div>
-                    </div>
-                 </div>
-
-                 <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-20 text-6xl drop-shadow-[0_10px_5px_rgba(0,0,0,0.5)]">🚶‍♂️</div>
-              </div>
-
-              {/* Right Side: Boss Stats & Attacks */}
-              <div className="w-1/3 bg-[#fcf5e3] border-4 border-[#b58c5a] rounded-xl shadow-2xl flex flex-col overflow-hidden shrink-0">
-                <div className="bg-[#f2e6cf] border-b-4 border-[#d4c3a3] p-4 flex justify-between items-center">
-                   <div>
-                     <h2 className="font-bold text-[#4a3b2c] text-sm tracking-wider">Exam Boss: {selectedExam?.subject || 'Unknown'}</h2>
-                     <p className="text-[10px] text-[#8c7457] font-bold mt-1">Status: {selectedExam?.status || 'UPCOMING'}</p>
-                   </div>
-                   <button onClick={() => {setShowAddBoss(!showAddBoss); setEditingBossId(null); setNewBossName('');}} className="text-[#a3222a] font-bold text-xs bg-white px-2 py-1 rounded border-2 border-[#d4c3a3]">+ Add Boss</button>
+              {/* Left Side: The Battlefield Stage */}
+              <div className="w-full md:w-2/3 flex flex-col items-center justify-center relative bg-[#1c0d18] rounded-xl border-2 border-[#3d1927] p-6 shadow-inner overflow-hidden">
+                {/* Stone Combat Dais with Dungeon Torches */}
+                <div className="absolute bottom-6 w-[360px] md:w-[460px] h-32 bg-[#2d1424] rounded-[100%] border-4 border-[#4f2038] shadow-[inset_0_10px_30px_rgba(0,0,0,0.8)]" />
+                
+                {/* Dungeon Sconce Torches Left & Right */}
+                <div className="absolute bottom-24 left-10 flex flex-col items-center">
+                  <div className="text-xl animate-pulse">🔥</div>
+                  <div className="w-2 h-6 bg-[#3d2314] rounded-xs shadow" />
+                </div>
+                <div className="absolute bottom-24 right-10 flex flex-col items-center">
+                  <div className="text-xl animate-pulse">🔥</div>
+                  <div className="w-2 h-6 bg-[#3d2314] rounded-xs shadow" />
                 </div>
                 
-                <div className="p-4 flex-grow flex flex-col items-center">
+                {/* The Boss */}
+                <div className={`relative flex flex-col items-center z-10 transition-transform ${bossHpPercentage === 0 ? 'opacity-0 scale-50' : 'animate-bounce'}`} style={{ animationDuration: '3s' }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-pixel text-white text-xs md:text-sm drop-shadow-md">
+                      {selectedExam?.name || 'No Boss Active'}
+                    </span>
+                    <span className="text-[10px] bg-red-950 text-red-300 border border-red-700 px-2 py-0.5 rounded font-bold uppercase">
+                      HP: {bossHpPercentage}%
+                    </span>
+                  </div>
+                  
+                  {/* Glowing HP Bar */}
+                  <div className="w-52 h-3.5 bg-[#0a0508] border-2 border-[#571f33] rounded-full mb-6 relative overflow-hidden shadow-[0_0_12px_rgba(239,68,68,0.35)]">
+                    <div 
+                      className="h-full bg-gradient-to-r from-red-600 to-rose-400 transition-all duration-500 rounded-full" 
+                      style={{ width: `${bossHpPercentage}%` }} 
+                    />
+                  </div>
+                  
+                  {/* Pixel Boss Monster Sprite Frame */}
+                  <div className="w-32 h-40 bg-[#3b122e] border-4 border-[#731c52] rounded-2xl flex flex-col items-center justify-center relative shadow-[0_0_40px_rgba(168,85,247,0.3)]">
+                    <div className="absolute top-8 flex gap-5">
+                      <div className="w-4 h-4 bg-amber-300 rounded-full shadow-[0_0_12px_rgba(252,211,77,1)]" />
+                      <div className="w-4 h-4 bg-amber-300 rounded-full shadow-[0_0_12px_rgba(252,211,77,1)]" />
+                    </div>
+                    <div className="absolute top-18 flex gap-1">
+                      {[1,2,3,4,5].map(t => (
+                        <div key={t} className="w-0 h-0 border-l-4 border-r-4 border-t-8 border-transparent border-t-red-200" />
+                      ))}
+                    </div>
+                    <div className="mt-14 font-pixel text-[10px] text-purple-300 uppercase tracking-widest">
+                      Lv. {selectedExam ? Math.max(1, Math.round(selectedExam.progress / 10)) : 1}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Player Champion Hero (Pixel Knight from Tiny Dungeon) */}
+                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex flex-col items-center">
+                  <img 
+                    src="/assets/tiny_dungeon/Tiles/tile_0100.png" 
+                    alt="Player Champion" 
+                    className="w-16 h-16 [image-rendering:pixelated] filter drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)] hover:scale-110 transition-transform cursor-pointer"
+                  />
+                  <div className="bg-[#12080f]/90 border border-[#4a1d2e] px-2 py-0.5 rounded text-[9px] font-pixel text-[#fca5a5] -mt-1 shadow">
+                    HERO LV. 1
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Side: Boss Stats & Attacks Command Deck */}
+              <div className="w-full md:w-1/3 bg-[#fdfaf3] border-4 border-[#8c7457] rounded-xl shadow-2xl flex flex-col overflow-hidden shrink-0">
+                <div className="bg-[#ede2cb] border-b-2 border-[#d5c3a5] p-3.5 flex justify-between items-center">
+                  <div>
+                    <h2 className="font-bold text-[#3d2f21] text-xs md:text-sm tracking-wider">Exam Boss: {selectedExam?.subject || 'Unknown'}</h2>
+                    <p className="text-[10px] text-[#79634e] font-bold mt-0.5">Status: {selectedExam?.status || 'UPCOMING'}</p>
+                  </div>
+                  <button 
+                    onClick={() => { setShowAddBoss(!showAddBoss); setEditingBossId(null); setNewBossName(''); }} 
+                    className="text-[#991b1b] font-bold text-xs bg-white px-2.5 py-1 rounded-lg border border-[#d5c3a5] hover:bg-[#fff7ed] transition-colors"
+                  >
+                    + Add Boss
+                  </button>
+                </div>
+                
+                <div className="p-4 flex-grow flex flex-col items-center custom-scrollbar overflow-y-auto">
                   {showAddBoss && (
-                    <div className="w-full mb-4 bg-white p-3 rounded border-2 border-[#d4c3a3] shadow-sm">
-                      <input type="text" placeholder="Subject Name..." value={newBossName} onChange={e=>setNewBossName(e.target.value)} className="w-full p-2 border border-[#d4c3a3] rounded mb-2 text-sm text-[#4a3b2c] font-bold outline-none" />
+                    <div className="w-full mb-4 bg-white p-3 rounded-xl border-2 border-[#d5c3a5] shadow-sm">
+                      <input 
+                        type="text" 
+                        placeholder="Subject Name (e.g. Algorithms, Calculus)..." 
+                        value={newBossName} 
+                        onChange={e => setNewBossName(e.target.value)} 
+                        className="w-full p-2 border border-[#d5c3a5] rounded-lg mb-2 text-xs text-[#3d2f21] font-semibold outline-none" 
+                      />
                       <div className="flex gap-2">
-                        {editingBossId && <button onClick={() => {setShowAddBoss(false); setEditingBossId(null);}} className="w-1/3 bg-gray-500 text-white font-bold py-2 rounded text-xs">Cancel</button>}
-                        <button onClick={handleAddBoss} className="flex-grow bg-green-600 text-white font-bold py-2 rounded text-xs">{editingBossId ? 'Update Boss' : 'Summon Boss'}</button>
+                        {editingBossId && (
+                          <button onClick={() => { setShowAddBoss(false); setEditingBossId(null); }} className="w-1/3 bg-gray-400 text-white font-bold py-1.5 rounded-lg text-xs">
+                            Cancel
+                          </button>
+                        )}
+                        <button onClick={handleAddBoss} className="flex-grow bg-[#2c5836] hover:bg-[#23472b] text-white font-bold py-1.5 rounded-lg text-xs transition-colors">
+                          {editingBossId ? 'Update Boss' : 'Summon Boss'}
+                        </button>
                       </div>
                     </div>
                   )}
 
                   {exams.length > 0 && (
-                    <div className="w-full mb-6">
+                    <div className="w-full mb-4">
                       <select 
-                        className="w-full p-2 bg-white border-2 border-[#d4c3a3] rounded text-xs font-bold text-[#4a3b2c] outline-none"
+                        className="w-full p-2.5 bg-white border-2 border-[#d5c3a5] rounded-lg text-xs font-bold text-[#3d2f21] outline-none"
                         onChange={(e) => setSelectedExam(exams.find(ex => ex.id === parseInt(e.target.value)) || null)}
                         value={selectedExam?.id || ''}
                       >
@@ -183,22 +279,44 @@ const Arena: React.FC = () => {
                       </select>
                       {selectedExam && (
                         <div className="flex justify-end gap-2 mt-2">
-                          <button onClick={() => handleEditBoss(selectedExam)} className="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold flex items-center gap-1"><Edit2 size={10}/> Edit</button>
-                          <button onClick={() => handleDeleteBoss(selectedExam.id)} className="text-[10px] bg-red-100 text-red-700 px-2 py-1 rounded font-bold flex items-center gap-1"><Trash2 size={10}/> Delete</button>
+                          <button onClick={() => handleEditBoss(selectedExam)} className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded font-bold flex items-center gap-1 hover:bg-blue-100">
+                            <Edit2 size={10}/> Edit
+                          </button>
+                          <button onClick={() => handleDeleteBoss(selectedExam.id)} className="text-[10px] bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded font-bold flex items-center gap-1 hover:bg-red-100">
+                            <Trash2 size={10}/> Delete
+                          </button>
                         </div>
                       )}
                     </div>
                   )}
 
-                  <div className="w-full mt-auto">
-                    <h3 className="font-bold text-[#8c7457] text-xs uppercase mb-2 text-center">Prepare for Battle</h3>
-                    <input type="text" placeholder="Topic (e.g. Chapter 4)" value={studyTopic} onChange={e=>setStudyTopic(e.target.value)} className="w-full p-2 mb-2 bg-white border-2 border-[#d4c3a3] rounded text-xs font-bold text-[#4a3b2c] outline-none" />
-                    <input type="text" placeholder="Notes (optional)" value={studyNotes} onChange={e=>setStudyNotes(e.target.value)} className="w-full p-2 mb-4 bg-white border-2 border-[#d4c3a3] rounded text-xs font-bold text-[#4a3b2c] outline-none" />
+                  <div className="w-full mt-auto pt-3 border-t border-[#ede2cb]">
+                    <h3 className="font-pixel text-[10px] text-[#79634e] uppercase mb-2 text-center">Execute Study Strike</h3>
+                    <input 
+                      type="text" 
+                      placeholder="Topic (e.g. Chapter 4, Graph Traversal)" 
+                      value={studyTopic} 
+                      onChange={e => setStudyTopic(e.target.value)} 
+                      className="w-full p-2 mb-2 bg-white border-2 border-[#d5c3a5] rounded-lg text-xs font-semibold text-[#3d2f21] outline-none" 
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="Study Notes (optional)" 
+                      value={studyNotes} 
+                      onChange={e => setStudyNotes(e.target.value)} 
+                      className="w-full p-2 mb-3 bg-white border-2 border-[#d5c3a5] rounded-lg text-xs font-semibold text-[#3d2f21] outline-none" 
+                    />
                     
-                    <button onClick={attackBoss} disabled={!selectedExam || bossHpPercentage === 0} className="w-full bg-[#a3222a] hover:bg-[#851b21] disabled:bg-gray-400 text-white font-bold py-4 rounded-xl border-b-4 border-[#591015] active:border-b-0 active:mt-1 transition-all shadow-md flex flex-col items-center justify-center gap-1">
-                      <Swords size={24} />
-                      <span>Study Session (60m)</span>
-                      <span className="text-[9px] text-red-200 uppercase font-bold tracking-widest block">-20% Boss HP</span>
+                    <button 
+                      onClick={attackBoss} 
+                      disabled={!selectedExam || bossHpPercentage === 0} 
+                      className="w-full bg-[#991b1b] hover:bg-[#7f1d1d] disabled:bg-gray-300 disabled:border-gray-400 text-white font-bold py-3.5 rounded-xl border-b-4 border-[#591015] active:border-b-0 active:translate-y-1 transition-all shadow-md flex flex-col items-center justify-center gap-1"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Swords size={20} />
+                        <span className="text-xs uppercase font-pixel tracking-wider">Strike Session (60m)</span>
+                      </div>
+                      <span className="text-[10px] text-red-200 font-bold tracking-wider">-20% BOSS HP • +50 XP</span>
                     </button>
                   </div>
                 </div>
@@ -207,51 +325,61 @@ const Arena: React.FC = () => {
           ) : (
             <>
               {/* Study Stats View */}
-              <div className="w-full flex gap-6">
+              <div className="w-full flex flex-col md:flex-row gap-6">
                 
-                {/* Left: Overall Stats */}
-                <div className="w-1/3 flex flex-col gap-4 shrink-0">
-                  <div className="bg-[#4a3b2c] border-4 border-[#b58c5a] rounded-xl p-6 shadow-inner text-center">
-                    <div className="text-4xl mb-2">🔥</div>
-                    <p className="text-[#d4c3a3] text-xs uppercase font-bold tracking-wider">Study Streak</p>
-                    <p className="font-pixel text-3xl text-yellow-500 mt-2">{streak} Days</p>
+                {/* Left: Overall Stats Cards */}
+                <div className="w-full md:w-1/3 flex flex-col gap-3 shrink-0">
+                  <div className="bg-[#24131d] border-2 border-[#542539] rounded-xl p-5 shadow-inner text-center">
+                    <div className="text-3xl mb-1">🔥</div>
+                    <p className="text-[#d8a8b8] text-[10px] uppercase font-pixel tracking-wider">Battle Streak</p>
+                    <p className="font-pixel text-2xl text-amber-400 mt-1">{streak} Days</p>
                   </div>
                   
-                  <div className="bg-[#4a3b2c] border-4 border-[#b58c5a] rounded-xl p-6 shadow-inner text-center">
-                    <div className="text-4xl mb-2">⏱️</div>
-                    <p className="text-[#d4c3a3] text-xs uppercase font-bold tracking-wider">Total Time</p>
-                    <p className="font-pixel text-3xl text-white mt-2">{totalStudyHours} hrs</p>
+                  <div className="bg-[#24131d] border-2 border-[#542539] rounded-xl p-5 shadow-inner text-center">
+                    <div className="text-3xl mb-1">⏱️</div>
+                    <p className="text-[#d8a8b8] text-[10px] uppercase font-pixel tracking-wider">Total Training</p>
+                    <p className="font-pixel text-2xl text-white mt-1">{totalStudyHours} hrs</p>
                   </div>
 
-                  <div className="bg-[#4a3b2c] border-4 border-[#b58c5a] rounded-xl p-6 shadow-inner text-center">
-                    <div className="text-4xl mb-2">⭐</div>
-                    <p className="text-[#d4c3a3] text-xs uppercase font-bold tracking-wider">Total XP Earned</p>
-                    <p className="font-pixel text-3xl text-blue-400 mt-2">{totalXp}</p>
+                  <div className="bg-[#24131d] border-2 border-[#542539] rounded-xl p-5 shadow-inner text-center">
+                    <div className="text-3xl mb-1">⭐</div>
+                    <p className="text-[#d8a8b8] text-[10px] uppercase font-pixel tracking-wider">Total XP Earned</p>
+                    <p className="font-pixel text-2xl text-indigo-300 mt-1">{totalXp}</p>
                   </div>
                 </div>
 
-                {/* Right: Study History */}
-                <div className="w-2/3 bg-[#fcf5e3] border-4 border-[#b58c5a] rounded-xl shadow-2xl flex flex-col overflow-hidden">
-                  <div className="bg-[#f2e6cf] border-b-4 border-[#d4c3a3] p-4 flex justify-between items-center">
-                    <h2 className="font-bold text-[#4a3b2c] text-sm tracking-wider uppercase flex items-center gap-2"><BookOpen size={16}/> Study History</h2>
-                    <span className="text-xs font-bold text-[#8c7457]">{sessions.length} Total Sessions</span>
+                {/* Right: Study History Ledger */}
+                <div className="w-full md:w-2/3 bg-[#fdfaf3] border-4 border-[#8c7457] rounded-xl shadow-2xl flex flex-col overflow-hidden">
+                  <div className="bg-[#ede2cb] border-b-2 border-[#d5c3a5] p-3.5 flex justify-between items-center">
+                    <h2 className="font-bold text-[#3d2f21] text-xs md:text-sm tracking-wider uppercase flex items-center gap-2">
+                      <BookOpen size={16} className="text-[#79634e]"/> Study History Ledger
+                    </h2>
+                    <span className="text-xs font-bold text-[#79634e]">{sessions.length} Recorded Strikes</span>
                   </div>
                   
-                  <div className="flex-grow overflow-y-auto p-4 flex flex-col gap-3 custom-scrollbar">
-                    {sessions.length === 0 && <p className="text-center font-bold text-[#8c7457] mt-10">No study sessions recorded yet. Go fight a boss!</p>}
+                  <div className="flex-grow overflow-y-auto p-4 flex flex-col gap-2.5 custom-scrollbar">
+                    {sessions.length === 0 && (
+                      <div className="flex-grow flex flex-col items-center justify-center text-center p-8 text-[#79634e]">
+                        <div className="text-3xl mb-2">⚔️</div>
+                        <p className="font-bold text-sm">No battle sessions recorded yet.</p>
+                        <p className="text-xs text-[#a08a75] mt-0.5">Switch to Battle Stage and strike a boss to record training.</p>
+                      </div>
+                    )}
                     {sessions.map(s => (
-                      <div key={s.id} className="bg-white border-2 border-[#d4c3a3] p-4 rounded-lg flex flex-col shadow-sm">
-                        <div className="flex justify-between items-start mb-2">
+                      <div key={s.id} className="bg-white border-2 border-[#d9cbb4] p-3.5 rounded-xl flex flex-col shadow-sm">
+                        <div className="flex justify-between items-start mb-1.5">
                           <div>
-                            <h3 className="font-bold text-[#4a3b2c]">{s.subject}</h3>
+                            <h3 className="font-bold text-sm text-[#3d2f21]">{s.subject}</h3>
                             <p className="text-[10px] text-gray-500 font-bold uppercase">{s.topic || 'General'}</p>
                           </div>
-                          <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-1 rounded">+{s.xpEarned} XP</span>
+                          <span className="bg-[#dcfce7] text-[#15803d] border border-[#86efac] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            +{s.xpEarned} XP
+                          </span>
                         </div>
-                        {s.notes && <p className="text-xs text-gray-600 mb-2 border-l-2 border-[#d4c3a3] pl-2">{s.notes}</p>}
-                        <div className="flex justify-between items-center mt-2 border-t pt-2 border-gray-100">
-                           <span className="text-[10px] font-bold text-[#8c7457]">{s.durationMinutes} Minutes</span>
-                           <span className="text-[10px] font-bold text-gray-400 uppercase">{new Date(s.date).toLocaleString()}</span>
+                        {s.notes && <p className="text-xs text-gray-600 mb-2 border-l-2 border-[#d5c3a5] pl-2">{s.notes}</p>}
+                        <div className="flex justify-between items-center mt-1 pt-1.5 border-t border-gray-100">
+                          <span className="text-[10px] font-bold text-[#79634e]">{s.durationMinutes} Minutes</span>
+                          <span className="text-[10px] font-bold text-gray-400 uppercase">{new Date(s.date).toLocaleString()}</span>
                         </div>
                       </div>
                     ))}

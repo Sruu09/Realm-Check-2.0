@@ -9,7 +9,7 @@ public class QuestDTO {
     private String description;
     private String difficulty;
     private Integer xpReward;
-    private Integer goldReward;
+
     private String status;
     private Boolean isDaily;
     private LocalDateTime createdAt;
@@ -27,8 +27,7 @@ public class QuestDTO {
     public void setDifficulty(String difficulty) { this.difficulty = difficulty; }
     public Integer getXpReward() { return xpReward; }
     public void setXpReward(Integer xpReward) { this.xpReward = xpReward; }
-    public Integer getGoldReward() { return goldReward; }
-    public void setGoldReward(Integer goldReward) { this.goldReward = goldReward; }
+
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public Boolean getIsDaily() { return isDaily; }

@@ -7,8 +7,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
@@ -21,19 +23,30 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers(
+                    request -> request.getRequestURI().startsWith("/api/")
+                ))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/onboarding/**").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/**").permitAll() // temporarily permit all for rapid prototyping
-                .anyRequest().authenticated()
-            );
+                .requestMatchers("/api/recommendations/**").authenticated()
+                .anyRequest().permitAll())
 
+            .addFilterBefore(new MockJwtAuthenticationFilter(), org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+
+        http.exceptionHandling(exceptionHandling ->
+                exceptionHandling.authenticationEntryPoint((request, response, authException) -> {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                })
+        );
         return http.build();
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        // Reduced strength for faster test execution while retaining BCrypt encoding for production.
+        return new BCryptPasswordEncoder(4);
     }
     
     @Bean

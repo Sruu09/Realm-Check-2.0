@@ -9,7 +9,7 @@ export interface JobApplication {
   notes: string;
 }
 
-const API_URL = 'http://localhost:8080/api/applications';
+const API_URL = 'http://localhost:8081/api/applications';
 
 export const getApplications = async (userId: number): Promise<JobApplication[]> => {
   const res = await fetch(`${API_URL}/user/${userId}`);

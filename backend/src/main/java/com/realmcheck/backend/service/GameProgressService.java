@@ -29,9 +29,10 @@ public class GameProgressService {
      * Calculate XP required for the next level based on base XP and multiplier.
      */
     public long xpForNextLevel(int currentLevel) {
+        int lvl = Math.max(1, currentLevel);
         double base = gameConfig.getLevel().getOrDefault("base-xp", 100.0);
         double mult = gameConfig.getLevel().getOrDefault("multiplier", 1.25);
-        return Math.round(base * Math.pow(mult, currentLevel - 1));
+        return Math.round(base * Math.pow(mult, lvl - 1));
     }
 
     /**
@@ -39,11 +40,13 @@ public class GameProgressService {
      */
     @Transactional
     public void addXp(User user, int amount) {
-        int newXp = user.getXp() + amount;
-        while (newXp >= xpForNextLevel(user.getLevel())) {
-            newXp -= xpForNextLevel(user.getLevel());
-            user.setLevel(user.getLevel() + 1);
+        int currentLevel = user.getLevel() != null ? user.getLevel() : 1;
+        int newXp = (user.getXp() != null ? user.getXp() : 0) + amount;
+        while (newXp >= xpForNextLevel(currentLevel)) {
+            newXp -= xpForNextLevel(currentLevel);
+            currentLevel++;
         }
+        user.setLevel(currentLevel);
         user.setXp(newXp);
         userRepository.save(user);
     }
@@ -52,13 +55,12 @@ public class GameProgressService {
      * Update other RPG stats (gold, energy, knowledge, health, streak, savings).
      */
     @Transactional
-    public void updateStats(User user, int goldDelta, int energyDelta, int knowledgeDelta, int healthDelta, int streakDelta, double savingsDelta) {
-        user.setGold(user.getGold() + goldDelta);
-        user.setEnergy(user.getEnergy() + energyDelta);
-        user.setKnowledge(user.getKnowledge() + knowledgeDelta);
-        user.setHealth(user.getHealth() + healthDelta);
-        user.setStreak(user.getStreak() + streakDelta);
-        user.setSavings(user.getSavings() + savingsDelta);
+    public void updateStats(User user, int energyDelta, int knowledgeDelta, int healthDelta, int streakDelta, double savingsDelta) {
+        user.setEnergy((user.getEnergy() != null ? user.getEnergy() : 100) + energyDelta);
+        user.setKnowledge((user.getKnowledge() != null ? user.getKnowledge() : 0) + knowledgeDelta);
+        user.setHealth((user.getHealth() != null ? user.getHealth() : 100) + healthDelta);
+        user.setStreak((user.getStreak() != null ? user.getStreak() : 0) + streakDelta);
+        user.setSavings((user.getSavings() != null ? user.getSavings() : 0.0) + savingsDelta);
         userRepository.save(user);
     }
 
@@ -68,13 +70,14 @@ public class GameProgressService {
     public PlayerStats toDto(User user) {
         PlayerStats dto = new PlayerStats();
         dto.setUserId(user.getUserId());
-        dto.setLevel(user.getLevel());
-        dto.setXp(user.getXp());
-        dto.setXpForNextLevel(xpForNextLevel(user.getLevel()));
-        dto.setStreak(user.getStreak());
-        dto.setHealth(user.getHealth());
-        dto.setGold(user.getGold());
-        dto.setTotalSavings(user.getSavings().longValue());
+        int lvl = user.getLevel() != null ? user.getLevel() : 1;
+        dto.setLevel(lvl);
+        dto.setXp(user.getXp() != null ? user.getXp() : 0);
+        dto.setXpForNextLevel(xpForNextLevel(lvl));
+        dto.setStreak(user.getStreak() != null ? user.getStreak() : 0);
+        dto.setHealth(user.getHealth() != null ? user.getHealth() : 100);
+
+        dto.setTotalSavings(user.getSavings() != null ? user.getSavings().longValue() : 0L);
         return dto;
     }
 }

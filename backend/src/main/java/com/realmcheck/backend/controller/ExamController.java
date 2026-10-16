@@ -92,6 +92,8 @@ public class ExamController {
         dto.setId(session.getId());
         dto.setUserId(session.getUserId());
         dto.setSubject(session.getSubject());
+        dto.setTopic(session.getTopic());
+        dto.setNotes(session.getNotes());
         dto.setDurationMinutes(session.getDurationMinutes());
         dto.setXpEarned(session.getXpEarned());
         dto.setDate(session.getDate());
@@ -102,8 +104,11 @@ public class ExamController {
         StudySession session = new StudySession();
         session.setUserId(dto.getUserId());
         session.setSubject(dto.getSubject());
+        session.setTopic(dto.getTopic());
+        session.setNotes(dto.getNotes());
         session.setDurationMinutes(dto.getDurationMinutes());
         session.setXpEarned(dto.getXpEarned());
+        session.setDate(dto.getDate() != null ? dto.getDate() : java.time.LocalDateTime.now());
         return session;
     }
 }

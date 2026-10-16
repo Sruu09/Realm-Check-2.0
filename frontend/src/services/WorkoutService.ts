@@ -1,6 +1,6 @@
 import type { Workout } from '../types/Workout';
 
-const API_BASE = 'http://localhost:8080/api/workouts';
+const API_BASE = 'http://localhost:8081/api/workouts';
 
 export const getWorkouts = async (userId: number): Promise<Workout[]> => {
   const res = await fetch(`${API_BASE}/user/${userId}`);

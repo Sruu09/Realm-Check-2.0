@@ -4,9 +4,10 @@ import com.realmcheck.backend.entity.Exam;
 import com.realmcheck.backend.entity.StudySession;
 import com.realmcheck.backend.repository.ExamRepository;
 import com.realmcheck.backend.repository.StudySessionRepository;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.realmcheck.backend.service.GameProgressService;
+import org.springframework.stereotype.Service;
+import com.realmcheck.backend.entity.User;
 import java.util.List;
 
 @Service
@@ -15,11 +16,13 @@ public class ExamService {
     private final ExamRepository examRepository;
     private final StudySessionRepository studySessionRepository;
     private final UserService userService;
+    private final GameProgressService gameProgressService;
 
-    public ExamService(ExamRepository examRepository, StudySessionRepository studySessionRepository, UserService userService) {
+    public ExamService(ExamRepository examRepository, StudySessionRepository studySessionRepository, UserService userService, GameProgressService gameProgressService) {
         this.examRepository = examRepository;
         this.studySessionRepository = studySessionRepository;
         this.userService = userService;
+        this.gameProgressService = gameProgressService;
     }
 
     public List<Exam> getExamsByUserId(Long userId) {
@@ -46,7 +49,9 @@ public class ExamService {
     public StudySession createStudySession(StudySession session) {
         StudySession saved = studySessionRepository.save(session);
         if (saved.getXpEarned() != null && saved.getXpEarned() > 0) {
-            userService.addXpAndGold(saved.getUserId(), saved.getXpEarned(), 0);
+            User user = userService.getUserById(saved.getUserId())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            gameProgressService.addXp(user, saved.getXpEarned());
         }
         return saved;
     }

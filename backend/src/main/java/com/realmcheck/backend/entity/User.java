@@ -17,7 +17,13 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @Column(nullable = false, unique = true)
+    private String username;
+
+    @Column(name = "password", nullable = false)
     private String passwordHash;
+    @Column(nullable = false)
+    private String role = "USER";
     private String avatarUrl;
     private LocalDate dateOfBirth;
     private String educationLevel;
@@ -30,7 +36,7 @@ public class User {
     private Integer health = 100;
     private Integer energy = 100;
     private Integer knowledge = 0;
-    private Integer gold = 0;
+
     private Double savings = 0.0;
     private String currentMood = "NEUTRAL";
 
@@ -74,14 +80,12 @@ public class User {
     public void setEnergy(Integer energy) { this.energy = energy; }
     public Integer getKnowledge() { return knowledge; }
     public void setKnowledge(Integer knowledge) { this.knowledge = knowledge; }
-    public Integer getGold() { return gold; }
-    public void setGold(Integer gold) { this.gold = gold; }
+
+
     public Double getSavings() { return savings; }
     public void setSavings(Double savings) { this.savings = savings; }
     public String getCurrentMood() { return currentMood; }
     public void setCurrentMood(String currentMood) { this.currentMood = currentMood; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 }

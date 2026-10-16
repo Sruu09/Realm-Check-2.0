@@ -54,15 +54,40 @@ const Onboarding: React.FC = () => {
     }
   };
 
-  const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(prev => prev + 1);
-    } else {
-      // Complete setup
-      navigate('/realm-ready');
+  const handleNext = async () => {
+  if (currentStep < steps.length - 1) {
+    setCurrentStep(prev => prev + 1);
+  } else {
+    // Complete setup: submit onboarding data
+    const payload = {
+      userId: Number(localStorage.getItem('userId')),
+      currentStage: answers[0] as string,
+      interests: JSON.stringify(answers[1] ?? []),
+      goals: JSON.stringify(answers[2] ?? []),
+      dailyTime: answers[4] as string,
+    };
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('http://localhost:8081/api/onboarding', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        window.dispatchEvent(new CustomEvent('realm-notify', { detail: `Onboarding failed: ${err}` }));
+      } else {
+        window.dispatchEvent(new CustomEvent('realm-notify', { detail: 'Onboarding completed!' }));
+        navigate('/realm-ready');
+      }
+    } catch (e) {
+      window.dispatchEvent(new CustomEvent('realm-notify', { detail: `Onboarding error: ${e}` }));
     }
-  };
-
+  }
+};
   const handleBack = () => {
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);

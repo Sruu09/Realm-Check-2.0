@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:/Users/HP/Desktop/RC 2.0/.codex/hooks/gsd-check-update.cmd\"",
+            "commandWindows": "\"C:/Users/HP/Desktop/RC 2.0/.codex/hooks/gsd-check-update.cmd\""
+          }
+        ]
+      }
+    ]
+  }
+}

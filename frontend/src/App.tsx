@@ -12,6 +12,7 @@ import Garden from './pages/Garden';
 import Arena from './pages/Arena';
 import WizardHouse from './pages/WizardHouse';
 import PetCompanion from './pages/PetCompanion';
+import Achievements from './pages/Achievements';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="/arena" element={<Arena />} />
           <Route path="/wizard" element={<WizardHouse />} />
           <Route path="/pet" element={<PetCompanion />} />
+          <Route path="/achievements" element={<Achievements />} />
         </Routes>
       </div>
     </Router>

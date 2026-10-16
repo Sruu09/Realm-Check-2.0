@@ -17,7 +17,7 @@ public class Quest {
     private String description;
     private String difficulty; // EASY, MEDIUM, HARD
     private Integer xpReward;
-    private Integer goldReward;
+
 
     private String status; // AVAILABLE, ACTIVE, COMPLETED, FAILED
     private Boolean isDaily;
@@ -37,8 +37,7 @@ public class Quest {
     public void setDifficulty(String difficulty) { this.difficulty = difficulty; }
     public Integer getXpReward() { return xpReward; }
     public void setXpReward(Integer xpReward) { this.xpReward = xpReward; }
-    public Integer getGoldReward() { return goldReward; }
-    public void setGoldReward(Integer goldReward) { this.goldReward = goldReward; }
+
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public Boolean getIsDaily() { return isDaily; }

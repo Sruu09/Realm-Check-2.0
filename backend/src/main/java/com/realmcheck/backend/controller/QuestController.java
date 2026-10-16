@@ -38,11 +38,18 @@ public class QuestController {
         Quest completed = questService.completeQuest(id);
         return ResponseEntity.ok(toDTO(completed));
     }
-    
+
     @PutMapping("/{id}/status")
     public ResponseEntity<QuestDTO> updateStatus(@PathVariable Long id, @RequestParam String status) {
         Quest updated = questService.updateQuestStatus(id, status);
         return ResponseEntity.ok(toDTO(updated));
+    }
+
+    // New endpoint: check if a daily quest has been completed today
+    @GetMapping("/{id}/completion/today")
+    public ResponseEntity<Boolean> isQuestCompletedToday(@PathVariable Long id) {
+        boolean completed = questService.isQuestCompletedToday(id);
+        return ResponseEntity.ok(completed);
     }
 
     private QuestDTO toDTO(Quest quest) {
@@ -53,7 +60,7 @@ public class QuestController {
         dto.setDescription(quest.getDescription());
         dto.setDifficulty(quest.getDifficulty());
         dto.setXpReward(quest.getXpReward());
-        dto.setGoldReward(quest.getGoldReward());
+
         dto.setStatus(quest.getStatus());
         dto.setIsDaily(quest.getIsDaily());
         dto.setCreatedAt(quest.getCreatedAt());
@@ -67,7 +74,7 @@ public class QuestController {
         quest.setDescription(dto.getDescription());
         quest.setDifficulty(dto.getDifficulty());
         quest.setXpReward(dto.getXpReward());
-        quest.setGoldReward(dto.getGoldReward());
+
         quest.setStatus(dto.getStatus());
         quest.setIsDaily(dto.getIsDaily());
         return quest;

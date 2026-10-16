@@ -11,7 +11,6 @@ public class PlayerStats {
     private long xpForNextLevel;
     private int streak;
     private int health;
-    private int gold;
     private long totalSavings;
 
     public PlayerStats() {}
@@ -33,9 +32,6 @@ public class PlayerStats {
 
     public int getHealth() { return health; }
     public void setHealth(int health) { this.health = health; }
-
-    public int getGold() { return gold; }
-    public void setGold(int gold) { this.gold = gold; }
 
     public long getTotalSavings() { return totalSavings; }
     public void setTotalSavings(long totalSavings) { this.totalSavings = totalSavings; }

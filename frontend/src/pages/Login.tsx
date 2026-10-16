@@ -6,13 +6,44 @@ import { User, Mail, Lock, Eye } from 'lucide-react';
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [isRegistering, setIsRegistering] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isRegistering) {
-      navigate('/onboarding');
-    } else {
-      navigate('/realm');
+    setError('');
+    try {
+      if (isRegistering) {
+        const res = await fetch('http://localhost:8081/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ name, email, password }),
+        });
+        if (!res.ok) throw new Error('Registration failed');
+        navigate('/onboarding');
+      } else {
+        const res = await fetch('http://localhost:8081/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email, password }),
+        });
+        if (!res.ok) throw new Error('Login failed');
+        const data = await res.json();
+        if (data.userId) {
+          localStorage.setItem('userId', data.userId.toString());
+          if (data.token) {
+            localStorage.setItem('authToken', data.token);
+          }
+        }
+        navigate('/realm');
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Authentication error');
     }
   };
 
@@ -36,8 +67,13 @@ const Login: React.FC = () => {
         {/* Parchment Container */}
         <div className="bg-[#fcf5e3] rounded-2xl border-4 border-[#b58c5a] shadow-2xl p-8 relative">
           
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-[#4a3b2c] mb-2">
+          <div className="text-center mb-6 flex flex-col items-center">
+            <img 
+              src="/assets/realm logo.png" 
+              alt="Realm Check" 
+              className="w-20 h-20 object-contain mb-2 filter drop-shadow-md" 
+            />
+            <h1 className="text-2xl font-bold text-[#4a3b2c] mb-1">
               {isRegistering ? 'Create Your Account' : 'Welcome Back, Explorer!'}
             </h1>
             <p className="text-[#8c7457] text-sm">
@@ -46,12 +82,19 @@ const Login: React.FC = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded text-xs font-bold text-center">
+                {error}
+              </div>
+            )}
             
             {isRegistering && (
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                 <input 
                   type="text" 
+                  value={name}
+                  onChange={e => setName(e.target.value)}
                   className="w-full bg-[#fdfaf0] border border-[#d4c3a3] rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#483c6c]"
                   placeholder="Full Name"
                   required
@@ -63,6 +106,8 @@ const Login: React.FC = () => {
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
               <input 
                 type="text" 
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 className="w-full bg-[#fdfaf0] border border-[#d4c3a3] rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#483c6c]"
                 placeholder="Email or Username"
                 required
@@ -73,6 +118,8 @@ const Login: React.FC = () => {
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
               <input 
                 type="password" 
+                value={password}
+                onChange={e => setPassword(e.target.value)}
                 className="w-full bg-[#fdfaf0] border border-[#d4c3a3] rounded-lg pl-10 pr-10 py-3 text-sm focus:outline-none focus:border-[#483c6c]"
                 placeholder="Password"
                 required

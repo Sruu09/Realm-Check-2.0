@@ -9,10 +9,10 @@ export interface StudySession {
   xpEarned: number;
 }
 
-const API_URL = 'http://localhost:8080/api/exams/sessions';
+const API_URL = 'http://localhost:8081/api/exams/sessions';
 
 export const getStudySessions = async (userId: number): Promise<StudySession[]> => {
-  const res = await fetch(`${API_URL}/user/${userId}`);
+  const res = await fetch(`${API_URL}/user/${userId}`, { credentials: 'include' });
   if (!res.ok) throw new Error('Failed to fetch study sessions');
   return res.json();
 };
@@ -20,6 +20,7 @@ export const getStudySessions = async (userId: number): Promise<StudySession[]> 
 export const addStudySession = async (session: Partial<StudySession>): Promise<StudySession> => {
   const res = await fetch(API_URL, {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(session),
   });

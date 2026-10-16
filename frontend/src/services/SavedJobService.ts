@@ -8,7 +8,7 @@ export interface SavedJob {
   dateSaved: string;
 }
 
-const API_URL = 'http://localhost:8080/api/saved-jobs';
+const API_URL = 'http://localhost:8081/api/saved-jobs';
 
 export const getSavedJobs = async (userId: number): Promise<SavedJob[]> => {
   const res = await fetch(`${API_URL}/user/${userId}`);

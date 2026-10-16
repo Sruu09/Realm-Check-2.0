@@ -9,10 +9,10 @@ export interface Exam {
   status: 'UPCOMING' | 'PASSED' | 'FAILED';
 }
 
-const API_URL = 'http://localhost:8080/api/exams';
+const API_URL = 'http://localhost:8081/api/exams';
 
 export const getUserExams = async (userId: number): Promise<Exam[]> => {
-  const res = await fetch(`${API_URL}/user/${userId}`);
+  const res = await fetch(`${API_URL}/user/${userId}`, { credentials: 'include' });
   if (!res.ok) throw new Error('Failed to fetch exams');
   return res.json();
 };
@@ -20,6 +20,7 @@ export const getUserExams = async (userId: number): Promise<Exam[]> => {
 export const createExam = async (exam: Partial<Exam>): Promise<Exam> => {
   const res = await fetch(API_URL, {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(exam),
   });
@@ -30,6 +31,7 @@ export const createExam = async (exam: Partial<Exam>): Promise<Exam> => {
 export const updateExam = async (id: number, exam: Partial<Exam>): Promise<Exam> => {
   const res = await fetch(`${API_URL}/${id}`, {
     method: 'PUT',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(exam),
   });
@@ -38,6 +40,6 @@ export const updateExam = async (id: number, exam: Partial<Exam>): Promise<Exam>
 };
 
 export const deleteExam = async (id: number): Promise<void> => {
-  const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+  const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE', credentials: 'include' });
   if (!res.ok) throw new Error('Failed to delete exam');
 };

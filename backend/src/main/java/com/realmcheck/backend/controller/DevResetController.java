@@ -40,7 +40,7 @@ public class DevResetController {
         user.setHealth(100);
         user.setEnergy(100);
         user.setKnowledge(0);
-        user.setGold(0);
+
         user.setSavings(0.0);
         userRepository.save(user);
         return ResponseEntity.ok("Development player reset to initial state.");

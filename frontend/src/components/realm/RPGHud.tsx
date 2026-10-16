@@ -1,85 +1,93 @@
 import React, { useState, useEffect } from 'react';
-import { getUserStats, type User } from '../../services/UserService';
+import { getPlayerStats, type User } from '../../services/UserService';
 
 const RPGHud: React.FC = () => {
   const [stats, setStats] = useState<User | null>(null);
 
   useEffect(() => {
-    // In Phase 5+, user ID will be fetched from the JWT context
-    const fetchStats = () => getUserStats(1).then(setStats).catch(console.error);
+    const fetchStats = () => {
+      const userId = Number(localStorage.getItem('userId') ?? 0);
+      if (userId) {
+        getPlayerStats(userId).then(setStats).catch(console.error);
+      }
+    };
     fetchStats();
     
     window.addEventListener('player-stats-updated', fetchStats);
     return () => window.removeEventListener('player-stats-updated', fetchStats);
   }, []);
 
-  const xpRequired = stats ? stats.level * 100 : 100;
+  const xpRequired = stats?.xpForNextLevel ?? (stats?.level ? stats.level * 100 : 100);
   const xpPercentage = stats ? Math.min(100, (stats.xp / xpRequired) * 100) : 0;
 
   return (
-    <div className="absolute top-4 left-4 z-50 flex gap-4 pointer-events-auto">
-      {/* HUD Container */}
-      <div className="bg-[#1a1728] border-2 border-[#3d3356] rounded-xl px-4 py-2 flex items-center gap-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+    <div className="flex items-center pointer-events-auto">
+      {/* Medieval Dark Walnut Inventory-Style HUD Panel */}
+      <div 
+        className="bg-[#2a1d13] border-2 border-[#8c7457] rounded-xl px-4 py-2 flex items-center gap-5 shadow-[0_6px_16px_rgba(0,0,0,0.5)] text-[#fef3c7]"
+        style={{
+          backgroundImage: `
+            linear-gradient(90deg, rgba(0,0,0,0.2) 0%, transparent 10%, transparent 90%, rgba(0,0,0,0.3) 100%),
+            repeating-linear-gradient(0deg, #2a1d13, #2a1d13 16px, #22160d 17px, #22160d 18px)
+          `
+        }}
+      >
         
-        {/* Health (Static for now) */}
+        {/* Health */}
         <div className="flex items-center gap-2">
-          <div className="text-red-400 text-xl drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]">❤️</div>
+          <span className="text-base filter drop-shadow">❤️</span>
           <div className="flex flex-col">
-            <span className="text-[10px] text-gray-400 font-bold tracking-widest uppercase">Health</span>
-            <div className="w-24 h-2.5 bg-[#0f0d16] rounded-full mt-0.5 border border-[#3d3356] overflow-hidden relative shadow-inner">
-              <div className="absolute top-0 left-0 h-full w-full bg-gradient-to-r from-red-600 to-red-400" />
+            <div className="flex justify-between w-20">
+              <span className="text-[9px] text-[#c7b49d] font-bold uppercase tracking-wider font-pixel">HP</span>
+              <span className="text-[9px] text-[#fef08a] font-semibold">{stats?.health ?? 100}</span>
             </div>
-            <span className="text-[9px] text-gray-300 font-pixel mt-1">100/100</span>
-          </div>
-        </div>
-
-        <div className="w-px h-8 bg-[#3d3356]" />
-
-        {/* XP & Level from Backend */}
-        <div className="flex items-center gap-2">
-          <div className="text-yellow-400 text-2xl drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">⭐</div>
-          <div className="flex flex-col">
-            <div className="flex justify-between w-32 items-end">
-              <span className="text-[10px] text-gray-400 font-bold tracking-widest uppercase">XP</span>
-              <span className="text-[10px] text-yellow-500 font-bold">Lv. {stats?.level || 1}</span>
+            <div className="w-20 h-2 bg-[#170e08] rounded-full mt-0.5 overflow-hidden border border-[#543b25] shadow-inner">
+              <div 
+                className="h-full bg-gradient-to-r from-red-600 to-rose-400 transition-all duration-300 rounded-full" 
+                style={{ width: `${Math.min(100, Math.max(0, stats?.health ?? 100))}%` }}
+              />
             </div>
-            <div className="w-32 h-2.5 bg-[#0f0d16] rounded-full mt-0.5 border border-[#3d3356] overflow-hidden relative shadow-inner">
-              <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-yellow-600 to-yellow-400 transition-all duration-500" style={{ width: `${xpPercentage}%` }} />
+          </div>
+        </div>
+
+        <div className="w-px h-6 bg-[#543b25]" />
+
+        {/* XP & Level */}
+        <div className="flex items-center gap-2">
+          <span className="text-base filter drop-shadow">⭐</span>
+          <div className="flex flex-col">
+            <div className="flex justify-between w-24">
+              <span className="text-[9px] text-[#c7b49d] font-bold uppercase tracking-wider font-pixel">XP</span>
+              <span className="text-[9px] text-[#facc15] font-bold">Lv. {stats?.level || 1}</span>
             </div>
-            <span className="text-[9px] text-gray-300 font-pixel mt-1">{stats?.xp || 0}/{xpRequired}</span>
+            <div className="w-24 h-2 bg-[#170e08] rounded-full mt-0.5 overflow-hidden border border-[#543b25] shadow-inner">
+              <div 
+                className="h-full bg-gradient-to-r from-amber-500 to-yellow-300 transition-all duration-300 rounded-full" 
+                style={{ width: `${xpPercentage}%` }} 
+              />
+            </div>
           </div>
         </div>
 
-        <div className="w-px h-8 bg-[#3d3356]" />
+        <div className="w-px h-6 bg-[#543b25]" />
 
-        {/* Streak from Backend */}
-        <div className="flex items-center gap-2">
-          <div className="text-orange-500 text-2xl drop-shadow-[0_0_5px_rgba(249,115,22,0.5)]">🔥</div>
+        {/* Streak */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-base filter drop-shadow">🔥</span>
           <div className="flex flex-col">
-            <span className="text-[10px] text-gray-400 font-bold tracking-widest uppercase">Streak</span>
-            <span className="text-[11px] text-orange-400 font-bold mt-1">{stats?.streak || 0} Days</span>
+            <span className="text-[9px] text-[#c7b49d] font-bold uppercase tracking-wider font-pixel">Streak</span>
+            <span className="text-[10px] text-[#fb923c] font-bold">{stats?.streak || 0}d</span>
           </div>
         </div>
 
-        <div className="w-px h-8 bg-[#3d3356]" />
+        <div className="w-px h-6 bg-[#543b25]" />
 
-        {/* Gold from Backend */}
-        <div className="flex items-center gap-2">
-          <div className="text-yellow-500 text-2xl drop-shadow-[0_0_5px_rgba(234,179,8,0.5)]">🪙</div>
+        {/* Savings */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-base filter drop-shadow">🪙</span>
           <div className="flex flex-col">
-            <span className="text-[10px] text-gray-400 font-bold tracking-widest uppercase">Gold</span>
-            <span className="text-[11px] text-yellow-500 font-bold mt-1">{stats?.gold || 0}</span>
-          </div>
-        </div>
-
-        <div className="w-px h-8 bg-[#3d3356]" />
-
-        {/* Savings from Backend */}
-        <div className="flex items-center gap-2">
-          <div className="text-green-400 text-2xl drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">💰</div>
-          <div className="flex flex-col">
-            <span className="text-[10px] text-gray-400 font-bold tracking-widest uppercase">Savings</span>
-            <span className="text-[11px] text-green-400 font-bold mt-1">₹{stats?.savings?.toLocaleString() || 0}</span>
+            <span className="text-[9px] text-[#c7b49d] font-bold uppercase tracking-wider font-pixel">Gold</span>
+            <span className="text-[10px] text-[#4ade80] font-bold">₹{stats?.totalSavings ? stats.totalSavings.toLocaleString() : 0}</span>
           </div>
         </div>
 

@@ -10,7 +10,7 @@ export interface AdzunaJob {
   url: string;
 }
 
-const API_URL = 'http://localhost:8080/api/adzuna';
+const API_URL = 'http://localhost:8081/api/adzuna';
 
 export const searchJobs = async (keyword: string, location: string): Promise<AdzunaJob[]> => {
   const res = await fetch(`${API_URL}/search?keyword=${encodeURIComponent(keyword)}&location=${encodeURIComponent(location)}`);
